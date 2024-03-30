@@ -2,6 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services" // add this line
 }
 
 def localProperties = new Properties()
@@ -23,8 +24,8 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.swachhkabadi.kabadmanager"
-    compileSdk flutter.compileSdkVersion
+    namespace "com.example.kabadmanager"
+    compileSdk 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -48,6 +49,8 @@ android {
         minSdkVersion 21
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
+        multiDexEnabled true
+        
         versionName flutterVersionName
     }
 

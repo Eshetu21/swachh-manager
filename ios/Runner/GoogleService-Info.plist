@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>607639301039-vg6tkmkt6lh49m8dr5tmisj8fd29uiuh.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.607639301039-vg6tkmkt6lh49m8dr5tmisj8fd29uiuh</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>607639301039-17qtae8q7l0t2tfehn90g0kmh294pvav.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAPdckHJQXIhgF5JlJWJQKP9YP6PESyt0Q</string>
+	<key>GCM_SENDER_ID</key>
+	<string>607639301039</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.kabadmanager</string>
+	<key>PROJECT_ID</key>
+	<string>swacch-kabadi</string>
+	<key>STORAGE_BUCKET</key>
+	<string>swacch-kabadi.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:607639301039:ios:e455024a12b917a9a45d5a</string>
+</dict>
+</plist>

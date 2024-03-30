@@ -69,6 +69,8 @@ dependencies:
   awesome_notifications: ^0.8.2
   firebase_crashlytics: ^3.4.20
   firebase_analytics: ^10.9.0
+  supabase_auth_ui: ^0.4.3
+  flutter_slidable: ^3.1.0
 
 dev_dependencies:
 

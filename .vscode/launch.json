@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "KabadManager Android dev",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define-from-file=.env/dev.json"
+            ]
+        },
+        {
+            "name": "KabadManager Android Production",
+            "request": "launch",
+            "type": "dart",
+            "toolArgs": [
+                "--dart-define-from-file=.env/prod.json"
+            ]
+        },
+    ]
+}
