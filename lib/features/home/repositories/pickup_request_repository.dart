@@ -90,4 +90,27 @@ class SupabaseReqRepository extends BaseRequestsRepository {
       throw SkException('Failed to fetch addresses: $error');
     }
   }
+
+  Future<void> createTransaction({
+    required String requestId,
+    required Map<String, dynamic> address,
+    required Map<String, dynamic> orderQuantity,
+    required String? photograph,
+    required String ownerId,
+    required int paidAmount,
+  }) async {
+    try {
+      await _supabaseClient.from("transactions").insert({
+        "requestId": requestId,
+        "pickupLocation": address,
+        "orderQuantity": orderQuantity,
+        "photograph": photograph,
+        "ownerId": ownerId,
+        "totalAmountPaid": paidAmount,
+      });
+      return;
+    } catch (error) {
+      throw SkException('Failed to create transaction: $error');
+    }
+  }
 }

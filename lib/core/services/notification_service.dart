@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:kabadmanager/core/extensions/object_extension.dart';
@@ -39,7 +40,7 @@ class FirebaseNotificationService implements NotificationService {
   @override
   Future<void> initialize() async {
     await AwesomeNotifications().initialize(
-        'resource://drawable/ic_launcher_foreground',
+        null,
         [
           NotificationChannel(
             channelKey: NotificationKeys.requests.name,

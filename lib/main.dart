@@ -29,6 +29,7 @@ void main() async {
       return true;
     };
   }
+  FirebaseNotificationService.instance.initialize();
 
   runApp(const ProviderScope(child: KabadWalaApp()));
 }

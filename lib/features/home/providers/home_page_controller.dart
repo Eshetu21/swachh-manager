@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:kabadmanager/features/home/models/search_param.dart';
 import 'package:kabadmanager/features/home/repositories/pickup_request_repository.dart';
+import 'package:kabadmanager/features/home/screens/home_page.dart';
 import 'package:kabadmanager/models/pickup_request_model.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -14,7 +15,8 @@ class HomePageController extends _$HomePageController {
   List<PickupRequestModel> _models = [];
   @override
   HomePageControllerState build() {
-    getRequestsByStatus(RequestStatus.requested);
+    final status = ref.watch(categoryProvider);
+    getRequestsByStatus(status);
     return const _Initial();
   }
 

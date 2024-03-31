@@ -12,6 +12,8 @@ import 'package:kabadmanager/widgets/request_tile.dart';
 import 'package:kabadmanager/widgets/text_widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final categoryProvider = StateProvider((ref) => RequestStatus.requested);
+
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
@@ -20,18 +22,9 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  late ValueNotifier<RequestStatus> _selectedStatusNotifier;
-
   @override
   void initState() {
     super.initState();
-    _selectedStatusNotifier =
-        ValueNotifier<RequestStatus>(RequestStatus.requested);
-    _selectedStatusNotifier.addListener(() {
-      ref
-          .read(homePageControllerProvider.notifier)
-          .getRequestsByStatus(_selectedStatusNotifier.value);
-    });
   }
 
   @override
@@ -39,6 +32,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final state = ref.watch(homePageControllerProvider);
     final controller = ref.read(homePageControllerProvider.notifier);
     final appUser = Supabase.instance.client.auth.currentUser;
+    final category = ref.watch(categoryProvider);
     return Scaffold(
         drawer: Drawer(
           child: Column(
@@ -65,7 +59,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            controller.getRequestsByStatus(_selectedStatusNotifier.value);
+            controller.getRequestsByStatus(category);
           },
           child: CustomScrollView(
             slivers: [
@@ -92,22 +86,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: ValueListenableBuilder(
-                                  valueListenable: _selectedStatusNotifier,
-                                  builder: (BuildContext context, value,
-                                      Widget? child) {
-                                    return ChoiceChip(
-                                      label: Text(
-                                        RequestStatus
-                                            .values[index].name.capitalize,
-                                      ),
-                                      selected:
-                                          value == RequestStatus.values[index],
-                                      onSelected: (selected) {
-                                        _selectedStatusNotifier.value =
-                                            RequestStatus.values[index];
-                                      },
-                                    );
+                                child: ChoiceChip(
+                                  label: Text(
+                                    RequestStatus.values[index].name.capitalize,
+                                  ),
+                                  selected:
+                                      category == RequestStatus.values[index],
+                                  onSelected: (selected) {
+                                    ref.read(categoryProvider.notifier).update(
+                                        (state) => RequestStatus.values[index]);
                                   },
                                 ),
                               );
@@ -232,11 +219,5 @@ class _HomePageState extends ConsumerState<HomePage> {
             ],
           ),
         ));
-  }
-
-  @override
-  void dispose() {
-    _selectedStatusNotifier.dispose();
-    super.dispose();
   }
 }

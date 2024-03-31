@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kabadmanager/core/extensions/string_extension.dart';
 import 'package:kabadmanager/features/home/providers/home_page_controller.dart';
 import 'package:kabadmanager/features/home/providers/preview_page_controller.dart';
+import 'package:kabadmanager/features/home/screens/pick_order_screen.dart';
 import 'package:kabadmanager/models/pickup_request_model.dart';
 import 'package:kabadmanager/shared/show_snackbar.dart';
 import 'package:kabadmanager/widgets/app_filled_button.dart';
@@ -260,6 +261,19 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                               newStatus: RequestStatus.onTheWay);
                     },
                     label: 'Mark As On The Way',
+                  ),
+                ],
+                if (RequestStatus.onTheWay == widget.model.status) ...[
+                  AppFilledButton(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (c) {
+                        return PickOrderPage(
+                            address: addressModel,
+                            cartItems: cartModels,
+                            request: widget.model);
+                      }));
+                    },
+                    label: 'Pick Order',
                   ),
                 ]
               ],
