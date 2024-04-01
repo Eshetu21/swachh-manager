@@ -116,6 +116,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       }, childCount: 16),
                     );
                   }, data: (data) {
+                    if (data.isEmpty) {
+                      return const SliverToBoxAdapter(
+                        child: Center(child: Text("Look's like it's empty!!!")),
+                      );
+                    }
                     return SliverList(
                       delegate: SliverChildBuilderDelegate((ctx, index) {
                         final model = data[index];

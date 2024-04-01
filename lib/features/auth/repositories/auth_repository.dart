@@ -20,6 +20,7 @@ abstract class AuthRepository {
       required OtpType otpType});
   Future<User?> getUser();
   Future<void> sendOtp();
+  Future<bool> isAdmin();
 }
 
 class UnAuthenticatedUserException implements Exception {
@@ -73,8 +74,8 @@ class _AuthRepositoryImpl implements AuthRepository {
       String? phoneNumber,
       String? email,
       required OtpType otpType}) async {
-    final response = (await _supabase.auth
-            .verifyOTP(token: t, type: otpType, phone: phoneNumber,email: email))
+    final response = (await _supabase.auth.verifyOTP(
+            token: t, type: otpType, phone: phoneNumber, email: email))
         .user;
     if (response != null) {
       return (response);
@@ -97,5 +98,11 @@ class _AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> sendOtp() async {
     // _supabase.auth.updateUser(attributes)
+  }
+
+  @override
+  Future<bool> isAdmin() async {
+    final data = await _supabase.rpc('is_admin');
+    return data;
   }
 }

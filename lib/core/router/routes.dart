@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kabadmanager/features/auth/screens/login_page.dart';
 import 'package:kabadmanager/features/home/screens/home_page.dart';
 import 'package:kabadmanager/features/splash/screens/splash_screen.dart';
+import 'package:kabadmanager/features/splash/screens/unauthorized_page.dart';
 
 import './router_constants.dart';
 
@@ -23,6 +24,15 @@ class AuthRoute extends GoRouteData {
 
   @override
   Widget build(BuildContext context, GoRouterState state) => const LoginPage();
+}
+
+@RouteConstants.unAuthorizedRoute
+class UnAuthorizedRoute extends GoRouteData {
+  const UnAuthorizedRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) =>
+      const UnAuthorizedPage();
 }
 
 @RouteConstants.homeRoute

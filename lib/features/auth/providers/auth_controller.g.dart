@@ -6,7 +6,21 @@ part of 'auth_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authControllerHash() => r'bd997a13645c028a36c677d1d01c4fd80101ad97';
+String _$isAuthorizedHash() => r'1f93006869ac3afced56346b1f6f2e76ba23b791';
+
+/// See also [isAuthorized].
+@ProviderFor(isAuthorized)
+final isAuthorizedProvider = FutureProvider<bool>.internal(
+  isAuthorized,
+  name: r'isAuthorizedProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$isAuthorizedHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef IsAuthorizedRef = FutureProviderRef<bool>;
+String _$authControllerHash() => r'2f3061a17b0084bfa50c06f1c2b25efd2648d262';
 
 /// See also [authController].
 @ProviderFor(authController)

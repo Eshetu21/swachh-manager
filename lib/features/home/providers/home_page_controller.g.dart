@@ -7,7 +7,7 @@ part of 'home_page_controller.dart';
 // **************************************************************************
 
 String _$homePageControllerHash() =>
-    r'0998c785a563f2d6b5c0d01d08f527a02fb6059b';
+    r'85bb8bc2b97e8ab299d4bbb0ee17a72fda1051b1';
 
 /// See also [HomePageController].
 @ProviderFor(HomePageController)

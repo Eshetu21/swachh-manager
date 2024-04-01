@@ -7,25 +7,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 part "auth_controller.g.dart";
 
 @Riverpod(keepAlive: true)
+Future<bool> isAuthorized(IsAuthorizedRef ref) async {
+  return await AuthRepository().isAdmin();
+}
+
+@Riverpod(keepAlive: true)
 AuthController authController(AuthControllerRef ref) {
   final authStates = ref.watch(authStateChangesProvider);
+  final authorized = ref.watch(isAuthorizedProvider);
   if (authStates.value?.event == null) {
     return const AuthController(AppAuthState.loading);
   }
   if (authStates.value?.session != null) {
     final sessionUser = authStates.value!.session!.user;
-    final userMetadata = sessionUser.userMetadata;
-    // final email = sessionUser.email;
-    // final phone = sessionUser.phone;
-    final name = userMetadata?.containsKey("full_name") ?? false
-        ? userMetadata!['full_name']
-        : null;
-
-    // TODO: add the email and phone in the fields below in prod mode
-    if ([name].contains(null) || [name].contains('')) {
-      return const AuthController(AppAuthState.unfulfilledProfile);
-    }
-
 
     SupabaseNotificationWrapper.instance.initialize();
 
@@ -33,7 +27,10 @@ AuthController authController(AuthControllerRef ref) {
       id: sessionUser.id,
     );
 
-    return const AuthController(AppAuthState.authenticated);
+    if (authorized.value == true) {
+      return const AuthController(AppAuthState.authenticated);
+    }
+    return const AuthController(AppAuthState.unAuthorized);
   } else {
     return const AuthController(AppAuthState.unauthenticated);
   }
@@ -44,15 +41,7 @@ Stream<AuthState> authStateChanges(AuthStateChangesRef ref) {
   return Supabase.instance.client.auth.onAuthStateChange;
 }
 
-enum AppAuthState {
-  authenticated,
-  loading,
-  unauthenticated,
-
-  /// When user is authenticated but profile details are not filled
-  /// which is required
-  unfulfilledProfile
-}
+enum AppAuthState { authenticated, loading, unauthenticated, unAuthorized }
 
 class AuthController {
   final AppAuthState state;
@@ -69,6 +58,7 @@ class AuthController {
 
   Future<void> signOut() async {
     await _repo.signOut();
+    return;
   }
 
   Future<User?> signInWithGoogle() async {

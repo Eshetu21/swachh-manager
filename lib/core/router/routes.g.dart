@@ -9,6 +9,7 @@ part of 'routes.dart';
 List<RouteBase> get $appRoutes => [
       $splashRoute,
       $authRoute,
+      $unAuthorizedRoute,
       $homeRoute,
     ];
 
@@ -46,6 +47,30 @@ extension $AuthRouteExtension on AuthRoute {
 
   String get location => GoRouteData.$location(
         '/auth',
+      );
+
+  void go(BuildContext context) => context.go(location);
+
+  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+
+  void pushReplacement(BuildContext context) =>
+      context.pushReplacement(location);
+
+  void replace(BuildContext context) => context.replace(location);
+}
+
+RouteBase get $unAuthorizedRoute => GoRouteData.$route(
+      path: '/unAuthorized',
+      name: 'unAuthorized',
+      factory: $UnAuthorizedRouteExtension._fromState,
+    );
+
+extension $UnAuthorizedRouteExtension on UnAuthorizedRoute {
+  static UnAuthorizedRoute _fromState(GoRouterState state) =>
+      const UnAuthorizedRoute();
+
+  String get location => GoRouteData.$location(
+        '/unAuthorized',
       );
 
   void go(BuildContext context) => context.go(location);
