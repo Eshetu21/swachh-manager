@@ -20,10 +20,28 @@ class HomePageController extends _$HomePageController {
     return const _Initial();
   }
 
-  void getRequestsByStatus(RequestStatus status) async {
+  void getRequestsByStatus(
+    RequestStatus status,
+  ) async {
     try {
       state = const _Initial();
       final models = await _repo.listModelsByStatus(status);
+      state = _Data(models: models);
+      _models = models;
+    } catch (e) {
+      state = _Error(e);
+    }
+  }
+
+  void getRequestDataDateTime({
+    required RequestStatus status,
+    required DateTime fromDateTime,
+    required DateTime toDateTime,
+  }) async {
+    try {
+      state = const _Initial();
+      final models =
+          await _repo.listModelsFromDatetime(status, fromDateTime, toDateTime);
       state = _Data(models: models);
       _models = models;
     } catch (e) {
@@ -42,15 +60,14 @@ class HomePageController extends _$HomePageController {
   }
 
   void updateStatus(
-      {required String id, required RequestStatus newStatus}) async {
-    try {
-      await _repo.updateRequestStatus(id, newStatus);
-      _models.removeWhere((element) => element.id == id);
-      state = _Data(models: _models);
-      // _models[index] = _models[index].copyWith(status: newStatus);
-    } catch (e) {
-      print(e);
-      // throw error maybe catch...
+      {required String id,
+      required RequestStatus newStatus,
+      String? deliveryPartnerId}) async {
+    if (deliveryPartnerId != null) {
+      await _repo.assignDeliveryPartner(id, deliveryPartnerId);
     }
+    await _repo.updateRequestStatus(id, newStatus);
+    _models.removeWhere((element) => element.id == id);
+    state = _Data(models: _models);
   }
 }

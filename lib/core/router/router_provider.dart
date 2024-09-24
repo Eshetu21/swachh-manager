@@ -70,5 +70,4 @@ class AnalyticsRouteObserver extends NavigatorObserver {
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     analytics.logScreenView(screenName: route.settings.name ?? 'unknown');
   }
-
 }

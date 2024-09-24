@@ -21,6 +21,7 @@ class PickupRequestModel with _$PickupRequestModel {
     required DateTime requestDateTime,
     required String requestingUserId,
     DateTime? scheduleDateTime,
+    @JsonKey(name: "pickup_time")
     DateTime? pickedDateTime,
     ({String label, String address, String houseStreetNo})? address,
     required String qtyRange,

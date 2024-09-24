@@ -8,7 +8,22 @@ part "auth_controller.g.dart";
 
 @Riverpod(keepAlive: true)
 Future<bool> isAuthorized(IsAuthorizedRef ref) async {
+  final isPartner = ref.watch(isDeliveryPartnerProvider);
+  final isAdmin = ref.watch(isAdminProvider);
+  return (isPartner.hasValue && isPartner.value!) ||
+      isAdmin.hasValue && isAdmin.value!;
+}
+
+@Riverpod(keepAlive: true)
+Future<bool> isAdmin(IsAdminRef ref) async {
+ 
   return await AuthRepository().isAdmin();
+}
+
+@Riverpod(keepAlive: true)
+Future<bool> isDeliveryPartner(IsDeliveryPartnerRef ref) async {
+
+  return await AuthRepository().isDeliveryPartner();
 }
 
 @Riverpod(keepAlive: true)

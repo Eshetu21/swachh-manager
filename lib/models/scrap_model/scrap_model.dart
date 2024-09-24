@@ -46,6 +46,7 @@ abstract class ScrapModel with _$ScrapModel {
     required String name,
     String? photoUrl,
     required String description,
+ 
     required double price,
     @Default(ScrapMeasurement.kg) ScrapMeasurement measure,
     @Default(false) bool isNegotiable,

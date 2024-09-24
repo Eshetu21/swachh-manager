@@ -21,6 +21,7 @@ abstract class AuthRepository {
   Future<User?> getUser();
   Future<void> sendOtp();
   Future<bool> isAdmin();
+  Future<bool> isDeliveryPartner();
 }
 
 class UnAuthenticatedUserException implements Exception {
@@ -103,6 +104,12 @@ class _AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> isAdmin() async {
     final data = await _supabase.rpc('is_admin');
-    return data;
+    return data ?? false;
+  }
+
+  @override
+  Future<bool> isDeliveryPartner() async {
+    final data = await _supabase.rpc('is_delivery_partner');
+    return data ?? false;
   }
 }

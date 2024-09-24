@@ -89,6 +89,11 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                   child: MapTableWidget(
                     data: {
                       'Request Id': widget.model.id,
+                      if (widget.model.pickedDateTime != null) ...{
+                        'Pickup Time': DateFormat.yMd()
+                            .add_Hms()
+                            .format(widget.model.pickedDateTime!.toLocal()),
+                      },
                       'Request Date and Time': DateFormat.yMd()
                           .add_Hms()
                           .format(widget.model.requestDateTime.toLocal())
@@ -174,10 +179,10 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                         child: ElevatedButton.icon(
                             style: ButtonStyle(
                               padding:
-                                  MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                  WidgetStateProperty.all<EdgeInsetsGeometry>(
                                 const EdgeInsets.all(10),
                               ),
-                              shape: MaterialStateProperty.all<OutlinedBorder>(
+                              shape: WidgetStateProperty.all<OutlinedBorder>(
                                 RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -200,10 +205,10 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                         child: ElevatedButton.icon(
                           style: ButtonStyle(
                             padding:
-                                MaterialStateProperty.all<EdgeInsetsGeometry>(
+                                WidgetStateProperty.all<EdgeInsetsGeometry>(
                               const EdgeInsets.all(10),
                             ),
-                            shape: MaterialStateProperty.all<OutlinedBorder>(
+                            shape: WidgetStateProperty.all<OutlinedBorder>(
                               RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -259,6 +264,7 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                           .updateStatus(
                               id: widget.model.id,
                               newStatus: RequestStatus.onTheWay);
+                      Navigator.pop(context);
                     },
                     label: 'Mark As On The Way',
                   ),
@@ -274,6 +280,23 @@ class _RequestPreviewPageState extends ConsumerState<RequestPreviewPage> {
                       }));
                     },
                     label: 'Pick Order',
+                  ),
+                ],
+                if (RequestStatus.denied == widget.model.status) ...[
+                  AppFilledButton(
+                    onTap: () {
+                      try {
+                        ref
+                            .read(homePageControllerProvider.notifier)
+                            .updateStatus(
+                                id: widget.model.id,
+                                newStatus: RequestStatus.accepted);
+                        Navigator.pop(context);
+                      } catch (e) {
+                        showSnackBar(context, 'Failed to update status');
+                      }
+                    },
+                    label: 'Accept and Assign Request',
                   ),
                 ]
               ],

@@ -4,6 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:kabadmanager/core/extensions/string_extension.dart';
 import 'package:kabadmanager/features/auth/providers/auth_controller.dart';
 import 'package:kabadmanager/features/home/providers/home_page_controller.dart';
+import 'package:kabadmanager/features/home/screens/assign_request_popup.dart';
 import 'package:kabadmanager/features/home/screens/request_preview_page.dart';
 import 'package:kabadmanager/models/pickup_request_model.dart';
 import 'package:kabadmanager/shimmering_widgets/request_tile.dart';
@@ -12,13 +13,38 @@ import 'package:kabadmanager/widgets/request_tile.dart';
 import 'package:kabadmanager/widgets/text_widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final categoryProvider = StateProvider((ref) => RequestStatus.requested);
+final categoryProvider = StateProvider((ref) {
+  final statuses = getStatusListAsPerRole(ref);
+  return statuses[0];
+});
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
+}
+
+List<RequestStatus> getStatusListAsPerRole(dynamic ref) {
+  final isPartnerAsyncVal = ref.read(isDeliveryPartnerProvider);
+  final isAdminAsyncVal = ref.read(isAdminProvider);
+  if (isPartnerAsyncVal.hasValue && isPartnerAsyncVal.value == true) {
+    return [
+      RequestStatus.accepted,
+      RequestStatus.onTheWay,
+      RequestStatus.picked
+    ];
+  }
+  if (isAdminAsyncVal.hasValue && isAdminAsyncVal.value == true) {
+    return [
+      RequestStatus.requested,
+      RequestStatus.accepted,
+      RequestStatus.onTheWay,
+      RequestStatus.picked,
+      RequestStatus.denied
+    ];
+  }
+  return [];
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
@@ -33,27 +59,27 @@ class _HomePageState extends ConsumerState<HomePage> {
     final controller = ref.read(homePageControllerProvider.notifier);
     final appUser = Supabase.instance.client.auth.currentUser;
     final category = ref.watch(categoryProvider);
+    final statuses = getStatusListAsPerRole(ref);
     return Scaffold(
+        appBar: AppBar(
+          title: const TitleLarge(
+            text: 'KabadManager',
+            weight: FontWeight.bold,
+          ),
+        ),
         drawer: Drawer(
           child: Column(
             children: [
               UserAccountsDrawerHeader(
-                  currentAccountPicture: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(appUser?.userMetadata?['avatar_url'])),
-                  accountName: TitleLarge(
-                    text: '${appUser?.userMetadata?['full_name']}'.capitalize,
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    weight: FontWeight.bold,
-                  ),
-                  accountEmail: Text('${appUser?.userMetadata?['email']}')),
+                  accountName: const Text(""),
+                  accountEmail: Text('${appUser?.email}')),
               ListTile(
                 leading: const Icon(Icons.exit_to_app),
                 title: const LabelLarge(text: 'LogOut'),
                 onTap: () {
                   ref.read(authControllerProvider).signOut();
                 },
-              )
+              ),
             ],
           ),
         ),
@@ -67,34 +93,30 @@ class _HomePageState extends ConsumerState<HomePage> {
                 automaticallyImplyLeading: false,
                 pinned: false,
                 floating: true,
-                title: const TitleLarge(text: 'KabadManager'),
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight + 20),
+                  preferredSize: const Size.fromHeight(20),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        // const SizedBox(
-                        //     height: 50, child: CupertinoSearchTextField()),
-                        // const SizedBox(height: 20),
                         SizedBox(
                           height: 40,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
-                            itemCount: RequestStatus.values.length,
+                            itemCount: statuses.length,
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: ChoiceChip(
                                   label: Text(
-                                    RequestStatus.values[index].name.capitalize,
+                                    statuses[index].name.capitalize,
                                   ),
-                                  selected:
-                                      category == RequestStatus.values[index],
+                                  selected: category == statuses[index],
                                   onSelected: (selected) {
-                                    ref.read(categoryProvider.notifier).update(
-                                        (state) => RequestStatus.values[index]);
+                                    ref
+                                        .read(categoryProvider.notifier)
+                                        .update((state) => statuses[index]);
                                   },
                                 ),
                               );
@@ -117,8 +139,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     );
                   }, data: (data) {
                     if (data.isEmpty) {
-                      return const SliverToBoxAdapter(
-                        child: Center(child: Text("Look's like it's empty!!!")),
+                      return const SliverFillRemaining(
+                        child: Center(child: Text("Empty")),
                       );
                     }
                     return SliverList(
@@ -160,19 +182,19 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                               // The end action pane is the one at the right or the bottom side.
                               endActionPane: ActionPane(
-                                dismissible: DismissiblePane(onDismissed: () {
-                                  controller.updateStatus(
-                                      id: model.id,
-                                      newStatus: RequestStatus.accepted);
-                                }),
                                 motion: const ScrollMotion(),
                                 children: [
                                   SlidableAction(
                                     flex: 2,
                                     onPressed: (c) {
-                                      controller.updateStatus(
-                                          id: model.id,
-                                          newStatus: RequestStatus.accepted);
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AssignPartnerPopup(
+                                            requestId: model.id,
+                                          );
+                                        },
+                                      );
                                     },
                                     backgroundColor: Colors.greenAccent,
                                     foregroundColor: Colors.white,

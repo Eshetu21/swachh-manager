@@ -14,6 +14,12 @@ class KabadWalaApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'KabadManager',
       theme: ThemeData(
+        outlinedButtonTheme: const OutlinedButtonThemeData(
+            style: ButtonStyle(
+                shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(12)))),
+                minimumSize:
+                    WidgetStatePropertyAll(Size(double.infinity, 45)))),
         textTheme: GoogleFonts.poppinsTextTheme(TextThemes.textTheme),
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.green,

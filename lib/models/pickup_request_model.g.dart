@@ -16,9 +16,9 @@ _$PickupRequestModelImpl _$$PickupRequestModelImplFromJson(
       scheduleDateTime: json['scheduleDateTime'] == null
           ? null
           : DateTime.parse(json['scheduleDateTime'] as String),
-      pickedDateTime: json['pickedDateTime'] == null
+      pickedDateTime: json['pickup_time'] == null
           ? null
-          : DateTime.parse(json['pickedDateTime'] as String),
+          : DateTime.parse(json['pickup_time'] as String),
       address: _$recordConvertNullable(
         json['address'],
         ($jsonValue) => (
@@ -40,10 +40,10 @@ Map<String, dynamic> _$$PickupRequestModelImplToJson(
       'requestDateTime': instance.requestDateTime.toIso8601String(),
       'requestingUserId': instance.requestingUserId,
       'scheduleDateTime': instance.scheduleDateTime?.toIso8601String(),
-      'pickedDateTime': instance.pickedDateTime?.toIso8601String(),
+      'pickup_time': instance.pickedDateTime?.toIso8601String(),
       'address': instance.address == null
           ? null
-          : {
+          : <String, dynamic>{
               'address': instance.address!.address,
               'houseStreetNo': instance.address!.houseStreetNo,
               'label': instance.address!.label,

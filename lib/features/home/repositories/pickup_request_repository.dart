@@ -4,12 +4,15 @@ import 'package:kabadmanager/models/address_model/address_model.dart';
 import 'package:kabadmanager/models/cart_model/cart_model.dart';
 import 'package:kabadmanager/models/contact_model/contact_model.dart';
 import 'package:kabadmanager/models/pickup_request_model.dart';
+import 'package:kabadmanager/models/scrap_model/scrap_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class BaseRequestsRepository {
   Future<List<PickupRequestModel>> listModelsByStatus(
     RequestStatus status,
   );
+
+  Future<List<ScrapModel>> getScrapRecommendations(String name);
 
   void updateRequestStatus(String requestId, RequestStatus newStatus);
 
@@ -22,6 +25,29 @@ class SupabaseReqRepository extends BaseRequestsRepository {
   final int _offset = 0;
 
   @override
+  Future<List<ScrapModel>> getScrapRecommendations(String name) async {
+    try {
+      final models = await _supabaseClient
+          .from('scraps')
+          .select('*')
+          .ilikeAnyOf('name', ['%$name%']);
+
+      return (models as List).map((e) => ScrapModel.fromJson(e)).toList();
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
+  // Future<bool> assignRequestToPartner(String userId)async{
+  //   try {
+  //     await _supabaseClient.from('requests').update({'status':"accepted","assignedUserId":''})
+  //   } catch (e) {
+
+  //   }
+  // }
+
+  @override
   Future<List<PickupRequestModel>> listModelsByStatus(
     RequestStatus status,
   ) async {
@@ -29,6 +55,19 @@ class SupabaseReqRepository extends BaseRequestsRepository {
         .from('requests')
         .select('*,address:addressId(*)')
         .eq('status', status.name)
+        .order('scheduleDateTime')
+        .range(_offset, _offset + _limit);
+    return models.map((json) => PickupRequestModel.fromJson(json)).toList();
+  }
+
+  Future<List<PickupRequestModel>> listModelsFromDatetime(
+      RequestStatus status, DateTime from, DateTime to) async {
+    final models = await _supabaseClient
+        .from('requests')
+        .select('*,address:addressId(*)')
+        .eq('status', status.name)
+        .gte('requestDateTime', from.toIso8601String())
+        .lte('requestDateTime', to.toIso8601String())
         .order('scheduleDateTime')
         .range(_offset, _offset + _limit);
     return models.map((json) => PickupRequestModel.fromJson(json)).toList();
@@ -91,13 +130,24 @@ class SupabaseReqRepository extends BaseRequestsRepository {
     }
   }
 
+  Future<bool> assignDeliveryPartner(String reqId, String partnerId) async {
+    try {
+      await _supabaseClient
+          .from('requests')
+          .update({"deliveryPartnerId": partnerId}).eq('id', reqId);
+      return true;
+    } catch (error) {
+      throw SkException('Failed to assign partner: $error');
+    }
+  }
+
   Future<void> createTransaction({
     required String requestId,
     required Map<String, dynamic> address,
     required Map<String, dynamic> orderQuantity,
     required String? photograph,
     required String ownerId,
-    required int paidAmount,
+    required double paidAmount,
   }) async {
     try {
       await _supabaseClient.from("transactions").insert({

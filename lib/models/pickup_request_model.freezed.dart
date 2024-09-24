@@ -25,6 +25,7 @@ mixin _$PickupRequestModel {
   DateTime get requestDateTime => throw _privateConstructorUsedError;
   String get requestingUserId => throw _privateConstructorUsedError;
   DateTime? get scheduleDateTime => throw _privateConstructorUsedError;
+  @JsonKey(name: "pickup_time")
   DateTime? get pickedDateTime => throw _privateConstructorUsedError;
   ({String address, String houseStreetNo, String label})? get address =>
       throw _privateConstructorUsedError;
@@ -49,7 +50,7 @@ abstract class $PickupRequestModelCopyWith<$Res> {
       DateTime requestDateTime,
       String requestingUserId,
       DateTime? scheduleDateTime,
-      DateTime? pickedDateTime,
+      @JsonKey(name: "pickup_time") DateTime? pickedDateTime,
       ({String address, String houseStreetNo, String label})? address,
       String qtyRange,
       RequestStatus status});
@@ -133,7 +134,7 @@ abstract class _$$PickupRequestModelImplCopyWith<$Res>
       DateTime requestDateTime,
       String requestingUserId,
       DateTime? scheduleDateTime,
-      DateTime? pickedDateTime,
+      @JsonKey(name: "pickup_time") DateTime? pickedDateTime,
       ({String address, String houseStreetNo, String label})? address,
       String qtyRange,
       RequestStatus status});
@@ -210,7 +211,7 @@ class _$PickupRequestModelImpl implements _PickupRequestModel {
       required this.requestDateTime,
       required this.requestingUserId,
       this.scheduleDateTime,
-      this.pickedDateTime,
+      @JsonKey(name: "pickup_time") this.pickedDateTime,
       this.address,
       required this.qtyRange,
       this.status = RequestStatus.requested});
@@ -229,6 +230,7 @@ class _$PickupRequestModelImpl implements _PickupRequestModel {
   @override
   final DateTime? scheduleDateTime;
   @override
+  @JsonKey(name: "pickup_time")
   final DateTime? pickedDateTime;
   @override
   final ({String address, String houseStreetNo, String label})? address;
@@ -301,7 +303,7 @@ abstract class _PickupRequestModel implements PickupRequestModel {
       required final DateTime requestDateTime,
       required final String requestingUserId,
       final DateTime? scheduleDateTime,
-      final DateTime? pickedDateTime,
+      @JsonKey(name: "pickup_time") final DateTime? pickedDateTime,
       final ({String address, String houseStreetNo, String label})? address,
       required final String qtyRange,
       final RequestStatus status}) = _$PickupRequestModelImpl;
@@ -320,6 +322,7 @@ abstract class _PickupRequestModel implements PickupRequestModel {
   @override
   DateTime? get scheduleDateTime;
   @override
+  @JsonKey(name: "pickup_time")
   DateTime? get pickedDateTime;
   @override
   ({String address, String houseStreetNo, String label})? get address;
