@@ -192,7 +192,7 @@ class _PickOrderPageState extends ConsumerState<PickOrderPage> {
                   } else {
                     await repo.createTransaction(
                         requestId: widget.request.id,
-                        address: widget.address.toJson(),
+                        addressId: widget.address.id,
                         orderQuantity: keyValuePairs,
                         photograph: null,
                         ownerId: widget.request.requestingUserId,

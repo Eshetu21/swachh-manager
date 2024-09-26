@@ -143,7 +143,7 @@ class SupabaseReqRepository extends BaseRequestsRepository {
 
   Future<void> createTransaction({
     required String requestId,
-    required Map<String, dynamic> address,
+    required String addressId,
     required Map<String, dynamic> orderQuantity,
     required String? photograph,
     required String ownerId,
@@ -152,7 +152,7 @@ class SupabaseReqRepository extends BaseRequestsRepository {
     try {
       await _supabaseClient.from("transactions").insert({
         "requestId": requestId,
-        "pickupLocation": address,
+        "pickupLocationId": addressId,
         "orderQuantity": orderQuantity,
         "photograph": photograph,
         "ownerId": ownerId,
