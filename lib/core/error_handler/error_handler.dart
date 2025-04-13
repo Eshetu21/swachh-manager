@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:kabadmanager/features/auth/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SkException implements Exception {
@@ -28,8 +27,7 @@ SkException errorHandler(dynamic e) {
       e is ArgumentError ||
       e is RangeError ||
       e is FormatException ||
-      e is UnsupportedError ||
-      e is UnAuthenticatedUserException) {
+      e is UnsupportedError) {
     return SkException(e.toString());
   } else if (e is PlatformException) {
     if (e.code == "network_error") {
@@ -38,6 +36,6 @@ SkException errorHandler(dynamic e) {
       return const SkException("An error occurred");
     }
   }
-  // Handle other unhandled exceptions here
   return const SkException("An error occurred");
 }
+

@@ -1,21 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kabadmanager/core/router/routes.dart';
-import 'package:kabadmanager/features/auth/providers/auth_controller.dart';
 
-class SplashScreen extends ConsumerWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
-    ref.listen(authStateChangesProvider, (prev, next) {
-      if (next.value?.session != null) {
-        const HomeRoute().go(context);
-      } else {
-        const AuthRoute().go(context);
-      }
-    });
-
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SizedBox.expand(
         child: Center(
@@ -28,3 +17,4 @@ class SplashScreen extends ConsumerWidget {
     );
   }
 }
+

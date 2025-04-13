@@ -1,4 +1,4 @@
-package com.example.kabadmanager
+package com.swachhkabadi.kabadmanager
 
 import io.flutter.embedding.android.FlutterActivity
 

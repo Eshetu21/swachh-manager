@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kabadmanager/core/router/router_provider.dart';
 import 'package:kabadmanager/core/theme/text_theme.dart';
 
-class KabadWalaApp extends ConsumerWidget {
+class KabadWalaApp extends StatelessWidget {
   const KabadWalaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
-
-    return MaterialApp.router(
+  Widget build(BuildContext context) {
+    return MaterialApp(
       title: 'KabadManager',
       theme: ThemeData(
         outlinedButtonTheme: const OutlinedButtonThemeData(
@@ -33,7 +29,7 @@ class KabadWalaApp extends ConsumerWidget {
             seedColor: Colors.green, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      routerConfig: router,
     );
   }
 }
+

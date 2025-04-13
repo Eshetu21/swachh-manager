@@ -1,0 +1,2 @@
+C:/Users/VICTUS/Desktop/testing notifications/kabadmanager/android/app/.cxx/Debug/6b1qx1z6/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/VICTUS/Desktop/testing notifications/kabadmanager/android/app/.cxx/Debug/6b1qx1z6/armeabi-v7a/CMakeFiles/rebuild_cache.dir
