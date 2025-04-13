@@ -7,11 +7,14 @@ class SkException implements Exception {
   final String message;
 
   const SkException(this.message);
+
+  @override
+  String toString() => message;
 }
 
 class NetworkException extends SkException {
   NetworkException()
-      : super('Please ensure that you are connected to internet');
+      : super('Please ensure that you are connected to the internet');
 }
 
 SkException errorHandler(dynamic e) {
@@ -19,23 +22,25 @@ SkException errorHandler(dynamic e) {
     return e;
   } else if (e is SocketException) {
     return NetworkException();
-  } else if (e is PostgrestException ||
-      e is AuthException ||
-      e is AuthPKCEGrantCodeExchangeError ||
-      e is AuthException ||
-      e is TypeError ||
-      e is ArgumentError ||
-      e is RangeError ||
-      e is FormatException ||
-      e is UnsupportedError) {
-    return SkException(e.toString());
+  } else if (e is PostgrestException) {
+    return SkException(e.message);
+  } else if (e is AuthException) {
+    return SkException(e.message);
+  } else if (e is AuthPKCEGrantCodeExchangeError) {
+    return SkException(e.message);
   } else if (e is PlatformException) {
     if (e.code == "network_error") {
       return NetworkException();
     } else {
-      return const SkException("An error occurred");
+      return SkException(e.message ?? "An unexpected error occurred");
     }
+  } else if (e is TypeError ||
+      e is ArgumentError ||
+      e is RangeError ||
+      e is FormatException ||
+      e is UnsupportedError) {
+    return const SkException("Something went wrong. Please try again.");
   }
-  return const SkException("An error occurred");
-}
 
+  return const SkException("An unknown error occurred");
+}

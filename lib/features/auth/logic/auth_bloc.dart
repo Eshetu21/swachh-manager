@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/features/auth/data/auth_repository.dart';
 
 abstract class AuthEvent {}
@@ -9,6 +10,8 @@ class AuthLoginRequested extends AuthEvent {
 
   AuthLoginRequested({required this.email, required this.password});
 }
+
+class AuthLogout extends AuthEvent {}
 
 abstract class AuthState {}
 
@@ -35,14 +38,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         final isAdmin = await authRepository.loginAndVerifyAdmin(
-            event.email, event.password);
+          event.email,
+          event.password,
+        );
         if (isAdmin) {
           emit(AuthSucess(message: "Is Admin"));
         } else {
           emit(AuthFailure(error: "You are not an admin"));
         }
       } catch (e) {
-        emit(AuthFailure(error: "Login failed: ${e.toString()}"));
+        final handled = errorHandler(e);
+        emit(AuthFailure(error: handled.message));
+      }
+    });
+
+    on<AuthLogout>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await authRepository.logOut();
+        emit(AuthInitial());
+      } catch (e) {
+        final handled = errorHandler(e);
+        emit(AuthFailure(error: handled.message));
       }
     });
   }

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 
 class ShowProgressIndicator extends StatelessWidget {
-  const ShowProgressIndicator({super.key});
+  final double size;
+
+  const ShowProgressIndicator({
+    super.key,
+    this.size = 24,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: CircularProgressIndicator(),
+    return Center(
+      child: CircularProgressIndicator(
+        value: size / 2,
+      ),
     );
   }
 }
+

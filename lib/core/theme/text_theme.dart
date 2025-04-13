@@ -14,3 +14,4 @@ class TextThemes {
     titleSmall: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
   );
 }
+

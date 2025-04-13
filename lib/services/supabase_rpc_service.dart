@@ -1,51 +1,80 @@
+import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseRpcService {
   final SupabaseClient _client = Supabase.instance.client;
 
-  Future<bool> isAdmin(String userId) async {
-    final response =
-        await _client.functions.invoke("is_admin", body: {"user_id": userId});
-    if (response.status != 200 || response.data == null) {
-      return false;
+  Future<bool> isAdmin() async {
+    try {
+      final response = await _client.rpc('is_admin');
+      return response as bool? ?? false;
+    } catch (e) {
+      throw errorHandler(e);
     }
-    return response.data["is_admin"] ?? false;
   }
 
   Future<List<Request>> fetchRequestsByStatus(String status) async {
-    final response = await _client.functions
-        .invoke("get_requests_by_status", body: {"status": status});
-    if (response.status != 200 || response.data == null) {
+    try {
+      final response = await _client
+          .rpc('get_requests_by_status', params: {"status": status});
+      if (response is List) {
+        return response.map((item) => Request.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print("Function call error (get_requests_by_status): $e");
       return [];
     }
-    return (response.data as List)
-        .map((item) => Request.fromJson(item))
-        .toList();
   }
 
-  Future<void> changeRequestStatus(
-      {required String requestId, required String newStatus}) async {
-    await _client.functions.invoke("change_request_status",
-        body: {"request_id": requestId, "new_status": newStatus});
+  Future<void> changeRequestStatus({
+    required String requestId,
+    required String newStatus,
+  }) async {
+    try {
+      await _client.rpc('change_request_status', params: {
+        "request_id": requestId,
+        "new_status": newStatus,
+      });
+    } catch (e) {
+      print("Function call error (change_request_status): $e");
+    }
   }
 
-  Future<void> assignDeliveryParnert(
-      {required String requestId, required String partnerId}) async {
-    await _client.functions.invoke("assign_delivery_parnter",
-        body: {"request_id": requestId, "partner_id": partnerId});
+  Future<void> assignDeliveryPartner({
+    required String requestId,
+    required String partnerId,
+  }) async {
+    try {
+      await _client.rpc('assign_delivery_partner', params: {
+        "request_id": requestId,
+        "partner_id": partnerId,
+      });
+    } catch (e) {
+      print("Function call error (assign_delivery_partner): $e");
+    }
   }
 
   Future<void> createTransaction(Map<String, dynamic> transactionData) async {
-    await _client.functions.invoke('create_transaction', body: transactionData);
+    try {
+      await _client.rpc('create_transaction', params: transactionData);
+    } catch (e) {
+      print("Function call error (create_transaction): $e");
+    }
   }
 
   Future<List<Map<String, dynamic>>> fetchDeliveryPartners() async {
-    final response = await _client.functions.invoke('get_delivery_partners');
-
-    if (response.status != 200 || response.data == null) return [];
-
-    return List<Map<String, dynamic>>.from(response.data);
+    try {
+      final response = await _client.rpc('get_delivery_partners');
+      if (response is List) {
+        return List<Map<String, dynamic>>.from(response);
+      }
+      return [];
+    } catch (e) {
+      print("Function call error (get_delivery_partners): $e");
+      return [];
+    }
   }
 }
 
