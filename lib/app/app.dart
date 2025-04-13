@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kabadmanager/core/theme/text_theme.dart';
+import 'package:kabadmanager/features/auth/presentation/login_screen.dart';
 
 class KabadWalaApp extends StatelessWidget {
   const KabadWalaApp({super.key});
@@ -29,6 +30,7 @@ class KabadWalaApp extends StatelessWidget {
             seedColor: Colors.green, brightness: Brightness.dark),
         useMaterial3: true,
       ),
+      home: const LoginScreen(),
     );
   }
 }
