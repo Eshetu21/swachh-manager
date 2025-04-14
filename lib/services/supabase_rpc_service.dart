@@ -16,14 +16,56 @@ class SupabaseRpcService {
 
   Future<List<Request>> fetchRequestsByStatus(String status) async {
     try {
-      final response = await _client
-          .rpc('get_requests_by_status', params: {"status": status});
-      if (response is List) {
-        return response.map((item) => Request.fromJson(item)).toList();
+      if (status.isEmpty) {
+        throw ArgumentError("Status cannot be empty");
       }
-      return [];
-    } catch (e) {
-      print("Function call error (get_requests_by_status): $e");
+
+      final response = await _client.rpc('get_requests_by_status2', params: {
+        'status_param': status,
+      });
+
+      if (response == null) return [];
+
+      final List dataList = response is List ? response : [response];
+
+      return dataList
+          .map((item) {
+            try {
+              final json = item is Map<String, dynamic> ? item : {};
+              return Request.fromJson({
+                'id': json['id']?.toString() ?? '',
+                'request_date_time': json['requestDateTime']?.toString() ??
+                    json['request_date_time']?.toString() ??
+                    DateTime.now().toIso8601String(),
+                'address_id': json['addressId']?.toString() ??
+                    json['address_id']?.toString() ??
+                    '',
+                'requesting_user_id': json['requestingUserId']?.toString() ??
+                    json['requesting_user_id']?.toString() ??
+                    '',
+                'schedule_date_time': json['scheduleDateTime']?.toString() ??
+                    json['schedule_date_time']?.toString() ??
+                    DateTime.now().toIso8601String(),
+                'total_price': json['totalPrice'] ?? json['total_price'] ?? 0.0,
+                'status': json['status']?.toString() ?? 'pending',
+                'qty_range': json['qtyRange']?.toString() ??
+                    json['qty_range']?.toString(),
+                'delivery_partner_id': json['deliveryPartnerId']?.toString() ??
+                    json['delivery_partner_id']?.toString(),
+                'pickup_time': json['pickupTime']?.toString() ??
+                    json['pickup_time']?.toString(),
+              });
+            } catch (e, stack) {
+              print("Error parsing request item: $e");
+              print(stack);
+              return Request.fromJson({}); // Fallback empty request
+            }
+          })
+          .where((request) => request.id.isNotEmpty)
+          .toList();
+    } catch (e, stack) {
+      print("Error fetching requests: $e");
+      print(stack);
       return [];
     }
   }

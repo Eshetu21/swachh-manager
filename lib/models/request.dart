@@ -34,17 +34,18 @@ class Request {
 
   factory Request.fromJson(Map<String, dynamic> json) {
     return Request(
-      id: json['id'],
-      requestDateTime: DateTime.parse(json['requestDateTime']),
-      addressId: json['addressId'],
-      requestingUserId: json['requestingUserId'],
-      scheduleDateTime: DateTime.parse(json['scheduleDateTime']),
-      totalPrice: (json['totalPrice'] as num).toDouble(),
+      id: json[
+          'id'], // Assuming the id is already a UUID string in the response
+      requestDateTime: DateTime.parse(json['request_date_time']),
+      addressId: json['address_id'],
+      requestingUserId: json['requesting_user_id'],
+      scheduleDateTime: DateTime.parse(json['schedule_date_time']),
+      totalPrice: (json['total_price'] as num).toDouble(),
       status: requestStatusFromString(json['status']),
-      qtyRange: json['qtyRange'],
-      deliveryPartnerId: json['deliveryPartnerId'],
-      pickupTime: json['pickupTime'] != null
-          ? DateTime.parse(json['pickupTime'])
+      qtyRange: json['qty_range'],
+      deliveryPartnerId: json['delivery_partner_id'],
+      pickupTime: json['pickup_time'] != null
+          ? DateTime.parse(json['pickup_time'])
           : null,
     );
   }
@@ -64,3 +65,4 @@ class Request {
     };
   }
 }
+
