@@ -1,5 +1,7 @@
 import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/models/address.dart';
+import 'package:kabadmanager/models/cart.dart';
+import 'package:kabadmanager/models/contact.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -29,7 +31,7 @@ class SupabaseRpcService {
 
       final List dataList = response is List ? response : [response];
 
-      return dataList
+      final requests = dataList
           .map((item) {
             try {
               final json = item is Map<String, dynamic> ? item : {};
@@ -64,10 +66,28 @@ class SupabaseRpcService {
           })
           .where((request) => request.id.isNotEmpty)
           .toList();
+      print('Fetched ${requests.length} requests with status "$status":');
+      for (final r in requests) {
+        print(
+            '→ Request ID: ${r.id}, Qty: ${r.qtyRange}, Status: ${r.status}, AddressID: ${r.addressId}');
+      }
+
+      return requests;
     } catch (e, stack) {
       print("Error fetching requests: $e");
       print(stack);
       return [];
+    }
+  }
+
+  Future<Contact> getContactDetailsByReqId(String reqId) async {
+    try {
+      final data = (await _client.rpc('get_user_metadata', params: {
+        'req_id': reqId,
+      }));
+      return Contact.fromJson(data);
+    } catch (error) {
+      throw SkException('Failed to fetch addresses: $error');
     }
   }
 
@@ -103,6 +123,19 @@ class SupabaseRpcService {
     } catch (e) {
       print("Error in fetchAddressById: $e");
       return null;
+    }
+  }
+
+  Future<List<Cart>> getCartItemsByReqId(String id) async {
+    try {
+      final data = await _client
+          .from('cart')
+          .select("*,scrap:scrap_id(*)")
+          .eq('request_id', id);
+      print('getCartItemsByReqId $data');
+      return data.map((item) => Cart.fromJson(item)).toList();
+    } catch (error) {
+      throw SkException('Failed to fetch cart items: $error');
     }
   }
 

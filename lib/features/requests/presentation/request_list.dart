@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
+import 'package:kabadmanager/features/requests/presentation/request_detail_page.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
+import 'package:kabadmanager/shimmering_widgets/request_tile.dart';
 
 class RequestWithAddress {
   final Request request;
@@ -29,6 +31,16 @@ class _RequestListState extends State<RequestList> {
     _requestsWithAddresses = _fetchRequestsAndAddresses();
   }
 
+  @override
+  void didUpdateWidget(covariant RequestList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) {
+      setState(() {
+        _requestsWithAddresses = _fetchRequestsAndAddresses();
+      });
+    }
+  }
+
   Future<List<RequestWithAddress>> _fetchRequestsAndAddresses() async {
     final service = SupabaseRpcService();
     final requests = await service.fetchRequestsByStatus(widget.status);
@@ -39,10 +51,6 @@ class _RequestListState extends State<RequestList> {
     }).toList();
 
     return await Future.wait(futures);
-  }
-
-  String formatDate(DateTime dateTime) {
-    return DateFormat('MMM d, y').format(dateTime);
   }
 
   String formatTimeAgo(DateTime dateTime) {
@@ -69,173 +77,201 @@ class _RequestListState extends State<RequestList> {
         return Colors.green.shade600;
       case 'denied':
         return Colors.red.shade600;
+      case 'on_the_way':
+        return Colors.blue.shade600;
       default:
         return Colors.orange.shade700;
     }
   }
 
+  Future<void> _refreshData() async {
+    setState(() {
+      _requestsWithAddresses = _fetchRequestsAndAddresses();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<RequestWithAddress>>(
-      future: _requestsWithAddresses,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
-        } else if (snapshot.data == null || snapshot.data!.isEmpty) {
-          return const Center(child: Text("No requests found."));
-        }
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      child: FutureBuilder<List<RequestWithAddress>>(
+        future: _requestsWithAddresses,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return ListView.builder(
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return const ShimmeringPickRequestTile();
+              },
+            );
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return const Center(child: Text("No requests found."));
+          }
 
-        final requestData = snapshot.data!;
-        return ListView.builder(
-          itemCount: requestData.length,
-          itemBuilder: (context, index) {
-            final req = requestData[index].request;
-            final addr = requestData[index].address;
-            final scheduleDate = req.scheduleDateTime.toLocal();
-            final requestDate = req.requestDateTime.toLocal();
-
-            return Slidable(
-              key: ValueKey(req.id),
-              startActionPane: ActionPane(
-                motion: const DrawerMotion(),
-                extentRatio: 0.25,
-                children: [
-                  SlidableAction(
-                    onPressed: (_) async {
-                      await SupabaseRpcService().changeRequestStatus(
-                        requestId: req.id,
-                        newStatus: "denied",
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Request Denied')),
-                      );
-                      setState(() {
-                        _requestsWithAddresses = _fetchRequestsAndAddresses();
-                      });
-                    },
-                    backgroundColor: Colors.red,
-                    icon: Icons.cancel,
-                    label: 'Deny',
-                  ),
-                ],
-              ),
-              endActionPane: ActionPane(
-                motion: const DrawerMotion(),
-                extentRatio: 0.25,
-                children: [
-                  SlidableAction(
-                    onPressed: (_) async {
-                      await SupabaseRpcService().changeRequestStatus(
-                        requestId: req.id,
-                        newStatus: "accepted",
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Request Accepted')),
-                      );
-                      setState(() {
-                        _requestsWithAddresses = _fetchRequestsAndAddresses();
-                      });
-                    },
-                    backgroundColor: Colors.green,
-                    icon: Icons.check_circle,
-                    label: 'Accept',
-                  ),
-                ],
-              ),
-              child: Card(
-                elevation: 3,
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          final requestData = snapshot.data!;
+          return ListView.builder(
+            itemCount: requestData.length,
+            itemBuilder: (context, index) {
+              final req = requestData[index].request;
+              final addr = requestData[index].address;
+              final requestDate = req.requestDateTime.toLocal();
+              final requestId = requestData[index].request.id;
+              return Slidable(
+                key: ValueKey(req.id),
+                startActionPane: ActionPane(
+                  motion: const DrawerMotion(),
+                  extentRatio: 0.25,
+                  children: [
+                    SlidableAction(
+                      onPressed: (_) async {
+                        await SupabaseRpcService().changeRequestStatus(
+                          requestId: req.id,
+                          newStatus: "denied",
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Request Denied')),
+                        );
+                        setState(() {
+                          _requestsWithAddresses = _fetchRequestsAndAddresses();
+                        });
+                      },
+                      backgroundColor: Colors.red,
+                      icon: Icons.cancel,
+                      label: 'Deny',
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.calendar_today,
-                          size: 22, color: Colors.blue),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Requested on: ${DateFormat('MMM d, y • h:mm a').format(requestDate)}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                const Icon(Icons.access_time,
-                                    size: 16, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(
-                                  formatTimeAgo(requestDate),
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
+                endActionPane: ActionPane(
+                  motion: const DrawerMotion(),
+                  extentRatio: 0.25,
+                  children: [
+                    SlidableAction(
+                      onPressed: (_) async {
+                        await SupabaseRpcService().changeRequestStatus(
+                          requestId: req.id,
+                          newStatus: "accepted",
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Request Accepted')),
+                        );
+                        setState(() {
+                          _requestsWithAddresses = _fetchRequestsAndAddresses();
+                        });
+                      },
+                      backgroundColor: Colors.green,
+                      icon: Icons.check_circle,
+                      label: 'Accept',
+                    ),
+                  ],
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => RequestDetailPage(
+                            request: req,
+                            address: addr,
+                            requestId: requestId)));
+                  },
+                  child: Card(
+                    elevation: 2,
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                DateFormat('MMM d, y').format(requestDate),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Scheduled for: ${DateFormat('MMM d, y • h:mm a').format(scheduleDate)}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey.shade700,
                               ),
-                            ),
-                            SizedBox(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.01),
-                                      Text(
-                              addr != null
-                                  ? '${addr.label} - ${addr.address}'
-                                  : 'Address not found',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: getStatusColor(widget.status)
-                                        .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    widget.status.toUpperCase(),
-                                    style: TextStyle(
-                                      color: getStatusColor(widget.status),
-                                      fontWeight: FontWeight.bold,
+                              Row(
+                                children: [
+                                  const Icon(Icons.access_time,
+                                      size: 16, color: Colors.grey),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    formatTimeAgo(requestDate),
+                                    style: const TextStyle(
                                       fontSize: 12,
+                                      color: Colors.grey,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            addr != null ? addr.address : 'Address not found',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
-                      )
-                    ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Quantity ${req.qtyRange}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                DateFormat('M/d/y H:mm:ss').format(requestDate),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                margin: const EdgeInsets.only(top: 5),
+                                decoration: BoxDecoration(
+                                  color: getStatusColor(widget.status)
+                                      .withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  widget.status.toUpperCase(),
+                                  style: TextStyle(
+                                    color: getStatusColor(widget.status),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
