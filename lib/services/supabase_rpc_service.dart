@@ -1,4 +1,5 @@
 import 'package:kabadmanager/core/error_handler/error_handler.dart';
+import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,7 +59,7 @@ class SupabaseRpcService {
             } catch (e, stack) {
               print("Error parsing request item: $e");
               print(stack);
-              return Request.fromJson({}); // Fallback empty request
+              return Request.fromJson({});
             }
           })
           .where((request) => request.id.isNotEmpty)
@@ -67,6 +68,41 @@ class SupabaseRpcService {
       print("Error fetching requests: $e");
       print(stack);
       return [];
+    }
+  }
+
+  Future<Address?> fetchAddressById(String addressId) async {
+    try {
+      final response = await _client.rpc('fetchaddressbyid', params: {
+        'address_id': addressId,
+      });
+
+      if (response == null || response is! Map<String, dynamic>) {
+        return null;
+      }
+      final latlng = response['latlng'];
+      final latlngString = latlng is Map
+          ? '${latlng['lat']},${latlng['lng']}'
+          : (latlng?.toString() ?? '');
+
+      final address = Address(
+        id: response['id'] ?? '',
+        address: response['address'] ?? '',
+        label: response['label'] ?? '',
+        ownerId: response['ownerId'] ?? '',
+        latlng: latlngString,
+        category: response['category'],
+        houseStreetNo: response['houseStreetNo'],
+        apartmentRoadAreaLandMark: response['apartmentRoadAreadLandmark'],
+        phoneNumber: response['phoneNumber'],
+      );
+
+      print("Fetched Address: ${address.toJson()}");
+
+      return address;
+    } catch (e) {
+      print("Error in fetchAddressById: $e");
+      return null;
     }
   }
 
