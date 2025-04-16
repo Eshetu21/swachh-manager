@@ -2,6 +2,7 @@ import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/contact.dart';
+import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -66,12 +67,6 @@ class SupabaseRpcService {
           })
           .where((request) => request.id.isNotEmpty)
           .toList();
-      print('Fetched ${requests.length} requests with status "$status":');
-      for (final r in requests) {
-        print(
-            '→ Request ID: ${r.id}, Qty: ${r.qtyRange}, Status: ${r.status}, AddressID: ${r.addressId}');
-      }
-
       return requests;
     } catch (e, stack) {
       print("Error fetching requests: $e");
@@ -117,8 +112,6 @@ class SupabaseRpcService {
         phoneNumber: response['phoneNumber'],
       );
 
-      print("Fetched Address: ${address.toJson()}");
-
       return address;
     } catch (e) {
       print("Error in fetchAddressById: $e");
@@ -132,14 +125,13 @@ class SupabaseRpcService {
           .from('cart')
           .select("*,scrap:scrap_id(*)")
           .eq('request_id', id);
-      print('getCartItemsByReqId $data');
       return data.map((item) => Cart.fromJson(item)).toList();
     } catch (error) {
       throw SkException('Failed to fetch cart items: $error');
     }
   }
 
-  Future<void> changeRequestStatus({
+  /* Future<void> changeRequestStatus({
     required String requestId,
     required String newStatus,
   }) async {
@@ -151,41 +143,42 @@ class SupabaseRpcService {
     } catch (e) {
       print("Function call error (change_request_status): $e");
     }
-  }
+  } */
 
-  Future<void> assignDeliveryPartner({
-    required String requestId,
-    required String partnerId,
-  }) async {
+  Future<void> updateRequestStatus(
+      String requestId, RequestStatus newStatus) async {
     try {
-      await _client.rpc('assign_delivery_partner', params: {
-        "request_id": requestId,
-        "partner_id": partnerId,
-      });
+      await _client
+          .from('requests')
+          .update({'status': newStatus.name}).eq('id', requestId);
     } catch (e) {
-      print("Function call error (assign_delivery_partner): $e");
+      throw const SkException('Failed to update Request Status');
     }
   }
 
-  Future<void> createTransaction(Map<String, dynamic> transactionData) async {
+  Future<List<DeliveryPartner>> searchPartnerByName(String name) async {
     try {
-      await _client.rpc('create_transaction', params: transactionData);
+      final response = await Supabase.instance.client.rpc(
+          'search_delivery_partners_by_name',
+          params: {"search_name": name});
+      return (response as List)
+          .map((e) => DeliveryPartner.fromJson(e))
+          .toList();
     } catch (e) {
-      print("Function call error (create_transaction): $e");
+      print(e);
+      rethrow;
     }
   }
 
-  Future<List<Map<String, dynamic>>> fetchDeliveryPartners() async {
+  Future<void> acceptRequestWithPartner(
+      {required String requestId, required String partnerId}) async {
     try {
-      final response = await _client.rpc('get_delivery_partners');
-      if (response is List) {
-        return List<Map<String, dynamic>>.from(response);
-      }
-      return [];
+      await _client.from('requests').update({
+        'status': RequestStatus.accepted.name,
+        'deliveryPartnerId': partnerId,
+      }).eq('id', requestId);
     } catch (e) {
-      print("Function call error (get_delivery_partners): $e");
-      return [];
+      throw SkException('Failed to accept request with partner: $e');
     }
   }
 }
-

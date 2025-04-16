@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
-import 'package:kabadmanager/features/requests/presentation/request_list.dart';
+import 'package:kabadmanager/features/requests/request_list.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

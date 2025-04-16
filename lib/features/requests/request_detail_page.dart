@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:kabadmanager/features/delivery/presentation/assign_partner_popup.dart';
+import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/request.dart';
@@ -27,13 +29,34 @@ class RequestDetailPage extends StatefulWidget {
 class _RequestDetailPageState extends State<RequestDetailPage> {
   late Future<List<Cart>> _cartItems;
   late Future<Contact> _contactDetails;
+  final SupabaseRpcService _rpcService = SupabaseRpcService();
 
   @override
   void initState() {
     super.initState();
+
     _cartItems = SupabaseRpcService().getCartItemsByReqId(widget.requestId);
-    _contactDetails =
-        SupabaseRpcService().getContactDetailsByReqId(widget.requestId);
+    _contactDetails = _rpcService.getContactDetailsByReqId(widget.requestId);
+  }
+
+  Future<void> _acceptAndAssignPartner() async {
+    final partner = await showDialog<DeliveryPartner>(
+        context: context,
+        builder: (context) => AssignPartnerPopup(requestId: widget.requestId));
+    if (partner != null) {
+      try {
+        await _rpcService.acceptRequestWithPartner(
+            requestId: widget.requestId, partnerId: partner.id);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Request accepted and partner assigned")));
+        setState(() {
+          widget.request.status = RequestStatus.accepted;
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      }
+    }
   }
 
   Future<void> _openMap(String latLng) async {
@@ -59,7 +82,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Request Preview'),
+        title: const Text('Request Details'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -72,21 +95,13 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Request Details',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
                     _buildDetailRow('Request ID', widget.request.id),
                     const SizedBox(height: 8),
                     _buildStatusWidget(widget.request.status),
                     const SizedBox(height: 8),
                     if (widget.request.qtyRange != null)
                       _buildDetailRow(
-                          'Quantity Range', '${widget.request.qtyRange!} Kg'),
+                          'Quantity Range', widget.request.qtyRange!),
                     _buildDetailRow(
                       'Request Date',
                       DateFormat('MMM d, y H:mm')
@@ -123,53 +138,123 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
               },
             ),
             const SizedBox(height: 20),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Cart Items',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    FutureBuilder<List<Cart>>(
-                      future: _cartItems,
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return Text('Error loading cart items: ${snapshot.error}');
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Text('No items in cart');
-                        }
+            Text(
+              'Cart Items',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 10),
+            FutureBuilder<List<Cart>>(
+              future: _cartItems,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Text('Error loading cart items: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Text('No items in cart');
+                }
 
-                        final cartItems = snapshot.data!;
-                        return Column(
-                          children: [
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: cartItems.length,
-                              itemBuilder: (context, index) {
-                                final item = cartItems[index];
-                                return _buildCartItemCard(item);
-                              },
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTotalPrice(cartItems),
-                          ],
-                        );
+                final cartItems = snapshot.data!;
+                return Column(
+                  children: [
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: cartItems.length,
+                      itemBuilder: (context, index) {
+                        final item = cartItems[index];
+                        return _buildCartItemCard(item);
                       },
                     ),
+                    const SizedBox(height: 16),
+                    _buildTotalPrice(cartItems),
                   ],
+                );
+              },
+            ),
+            if (widget.request.status == RequestStatus.denied) ...[
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  await _acceptAndAssignPartner();
+                  if (mounted) Navigator.pop(context, true);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade600,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Accept and Assign Partner",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+            if (widget.request.status == RequestStatus.accepted) ...[
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  await _rpcService.updateRequestStatus(
+                      widget.requestId, RequestStatus.onTheWay);
+                  Navigator.pop(context, true);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade600,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Mark as on the way",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ]
           ],
         ),
       ),
@@ -428,4 +513,3 @@ Color _getStatusColor(RequestStatus status) {
       return Colors.grey;
   }
 }
-

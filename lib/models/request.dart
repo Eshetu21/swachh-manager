@@ -14,7 +14,7 @@ class Request {
   final String requestingUserId;
   final DateTime scheduleDateTime;
   final double totalPrice;
-  final RequestStatus status;
+  late RequestStatus status;
   final String? qtyRange;
   final String? deliveryPartnerId;
   final DateTime? pickupTime;

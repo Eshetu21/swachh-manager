@@ -23,7 +23,6 @@ void main() {
       ),
     );
   }, (error, stack) {
-    // Report all uncaught errors to Crashlytics in release mode
     if (!kDebugMode) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     } else {
@@ -34,15 +33,10 @@ void main() {
 
 Future<void> initializeServices() async {
   try {
-    // Setup dependency injection
     await setUpDependencies();
-
-    // Initialize Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-
-    // Enable Flutter error handling in release mode
     if (!kDebugMode) {
       FlutterError.onError =
           FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -52,8 +46,6 @@ Future<void> initializeServices() async {
         return true;
       };
     }
-
-    // Initialize Supabase
     await Supabase.initialize(
       url: "https://kbfzdoqimcdqltudyeht.supabase.co",
       anonKey:
