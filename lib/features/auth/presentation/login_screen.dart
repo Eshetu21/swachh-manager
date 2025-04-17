@@ -19,6 +19,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+
+    final logoSize = isPortrait ? screenHeight * 0.2 : screenWidth * 0.2;
+    final horizontalPadding = screenWidth * 0.05;
+    final verticalPadding = screenHeight * 0.02;
+    final buttonHeight = screenHeight * 0.06;
+    final betweenFieldsSpace = screenHeight * 0.02;
+
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -31,103 +42,139 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (context, state) {
           return Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    Text(
-                      "Admin Login",
-                      style: Theme.of(context).textTheme.headlineLarge,
-                    ),
-                    Image.asset("assets/images/swachh-logo.jpg"),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: emailController,
-                      decoration: const InputDecoration(labelText: 'Email'),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                        if (!emailRegex.hasMatch(value)) {
-                          return 'Enter a valid email';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: passwordController,
-                      obscureText: _obscurePassword,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: verticalPadding,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 500,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Admin Login",
+                        style:
+                            Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  fontSize: isPortrait
+                                      ? screenHeight * 0.035
+                                      : screenWidth * 0.035,
+                                ),
+                      ),
+                      SizedBox(height: betweenFieldsSpace),
+                      SizedBox(
+                        height: logoSize,
+                        child: Image.asset(
+                          "assets/images/swachh-logo.jpg",
+                          fit: BoxFit.contain,
                         ),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Password is required';
-                        }
-                        if (value.length < 6) {
-                          return 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.green),
-                        foregroundColor: WidgetStateProperty.all(Colors.white),
-                        minimumSize: WidgetStateProperty.all(
-                            const Size(double.infinity, 45)),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      SizedBox(height: betweenFieldsSpace * 2),
+                      TextFormField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.02,
+                            horizontal: screenWidth * 0.03,
                           ),
                         ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Email is required';
+                          }
+                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                          if (!emailRegex.hasMatch(value)) {
+                            return 'Enter a valid email';
+                          }
+                          return null;
+                        },
                       ),
-                      onPressed: state is AuthLoading
-                          ? null
-                          : () {
-                              if (_formKey.currentState!.validate()) {
-                                BlocProvider.of<AuthBloc>(context).add(
-                                  AuthLoginRequested(
-                                    email: emailController.text.trim(),
-                                    password: passwordController.text,
-                                  ),
-                                );
-                              }
+                      SizedBox(height: betweenFieldsSpace),
+                      TextFormField(
+                        controller: passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.02,
+                            horizontal: screenWidth * 0.03,
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: screenWidth * 0.06,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
                             },
-                      child: state is AuthLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              "Login",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Password is required';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: betweenFieldsSpace * 2),
+                      SizedBox(
+                        width: double.infinity,
+                        height: buttonHeight,
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor:
+                                WidgetStateProperty.all(Colors.green),
+                            foregroundColor:
+                                WidgetStateProperty.all(Colors.white),
+                            shape: WidgetStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                    )
-                  ],
+                          ),
+                          onPressed: state is AuthLoading
+                              ? null
+                              : () {
+                                  if (_formKey.currentState!.validate()) {
+                                    BlocProvider.of<AuthBloc>(context).add(
+                                      AuthLoginRequested(
+                                        email: emailController.text.trim(),
+                                        password: passwordController.text,
+                                      ),
+                                    );
+                                  }
+                                },
+                          child: state is AuthLoading
+                              ? SizedBox(
+                                  height: buttonHeight * 0.5,
+                                  width: buttonHeight * 0.5,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: screenHeight * 0.02,
+                                  ),
+                                ),
+                        ),
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),

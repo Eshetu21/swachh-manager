@@ -1,10 +1,15 @@
+import 'dart:convert';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/contact.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';
+import 'package:kabadmanager/models/scrap.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class SupabaseRpcService {
   final SupabaseClient _client = Supabase.instance.client;
@@ -179,6 +184,106 @@ class SupabaseRpcService {
       }).eq('id', requestId);
     } catch (e) {
       throw SkException('Failed to accept request with partner: $e');
+    }
+  }
+
+  Future<void> createTransaction({
+    required String requestId,
+    required String addressId,
+    required Map<String, dynamic> orderQuantity,
+    required String? photograph,
+    required String ownerId,
+    required double paidAmount,
+  }) async {
+    try {
+      await _client.from("transactions").insert({
+        "requestId": requestId,
+        "pickupLocationId": addressId,
+        "orderQuantity": orderQuantity,
+        "photograph": photograph,
+        "ownerId": ownerId,
+        "totalAmountPaid": paidAmount,
+      });
+    } catch (e) {
+      throw SkException('Failed to create transaction: $e');
+    }
+  }
+
+  Future<List<ScrapModel>> getScrapRecommendations(String name) async {
+    try {
+      final response = await _client
+          .from('scraps')
+          .select('*')
+          .ilike('name', '%$name%')
+          .limit(5);
+      return response.map((e) => ScrapModel.fromJson(e)).toList();
+    } catch (e) {
+      throw SkException('Failed to fetch scrap items: $e');
+    }
+  }
+
+  Future<void> deleteCartItem(String cartId) async {
+    try {
+      await _client.from('cart').delete().eq('id', cartId);
+    } catch (e) {
+      throw SkException('Failed to delete cart item: $e');
+    }
+  }
+
+  Future<String> insertCartItem({
+    required String scrapId,
+    required int qty,
+    required String requestId,
+  }) async {
+    try {
+      final response = await _client
+          .from('cart')
+          .insert({
+            'scrap_id': scrapId,
+            'qty': qty,
+            'request_id': requestId,
+          })
+          .select('id')
+          .single();
+      return response['id'] as String;
+    } catch (e) {
+      throw Exception("Failed to insert cart item: $e");
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchAllUsers() async {
+    try {
+      await dotenv.load(fileName: ".env");
+      final supaBaseKey = dotenv.env["SUPABASE_KEY"] ?? "";
+      final response = await http.get(
+        Uri.parse(
+            'https://kbfzdoqimcdqltudyeht.supabase.co/functions/v1/get-all-users'),
+        headers: {'Authorization': 'Bearer $supaBaseKey '},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final usersObject = data['users'] as Map<String, dynamic>? ?? {};
+        final usersList = usersObject['users'] as List? ?? [];
+
+        return usersList.map((user) => user as Map<String, dynamic>).toList();
+      } else {
+        throw Exception(
+            'API request failed with status ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch users: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> addDeliveryPartner(String userId) async {
+    try {
+      final response = await _client.rpc('add_delivery_partner', params: {
+        'user_id_param': userId,
+      });
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      throw Exception('Failed to add delivery partner: ${e.toString()}');
     }
   }
 }

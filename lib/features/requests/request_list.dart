@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
-import 'package:kabadmanager/features/delivery/presentation/assign_partner_popup.dart';
+import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
 import 'package:kabadmanager/features/requests/request_detail_page.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';

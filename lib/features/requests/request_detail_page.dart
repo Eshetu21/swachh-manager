@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:kabadmanager/features/delivery/presentation/assign_partner_popup.dart';
+import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
+import 'package:kabadmanager/features/requests/pick_request.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kabadmanager/models/cart.dart';
@@ -244,6 +245,50 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                     children: [
                       Text(
                         "Mark as on the way",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            if (widget.request.status == RequestStatus.onTheWay) ...[
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  final cartItems = await _cartItems;
+                  await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => PickOrderPage(address:widget.address! , cartItems: cartItems, request: widget.request),
+                  ));
+                  if (mounted) setState(() {});
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade600,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Pick order",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -513,3 +558,4 @@ Color _getStatusColor(RequestStatus status) {
       return Colors.grey;
   }
 }
+
