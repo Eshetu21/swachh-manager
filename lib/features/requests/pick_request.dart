@@ -50,7 +50,6 @@ class _PickOrderPageState extends State<PickOrderPage> {
     _calculateTotal();
   }
 
-// In the _PickOrderPageState class, add this method:
   Future<void> _deleteItem(String itemName, String? cartId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -252,7 +251,7 @@ class _PickOrderPageState extends State<PickOrderPage> {
                                           filled: true,
                                           fillColor: Theme.of(context)
                                               .colorScheme
-                                              .surfaceVariant,
+                                              .surfaceContainerHighest,
                                           contentPadding:
                                               const EdgeInsets.symmetric(
                                                   horizontal: 8),
@@ -397,6 +396,8 @@ class _PickOrderPageState extends State<PickOrderPage> {
 }
 
 class AddItemDialog extends StatefulWidget {
+  const AddItemDialog({super.key});
+
   @override
   State<AddItemDialog> createState() => _AddItemDialogState();
 }
@@ -409,7 +410,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
   final TextEditingController _priceController = TextEditingController();
   String _selectedMeasureType = 'kg';
   List<ScrapModel> _scrapSuggestions = [];
-  bool _isLoading = false;
   ScrapModel? _selectedScrap;
 
   @override
@@ -429,13 +429,11 @@ class _AddItemDialogState extends State<AddItemDialog> {
                     return const Iterable<ScrapModel>.empty();
                   }
                   try {
-                    _isLoading = true;
                     setState(() {});
                     _scrapSuggestions = await _supabaseService
                         .getScrapRecommendations(textEditingValue.text);
                     return _scrapSuggestions;
                   } finally {
-                    _isLoading = false;
                     setState(() {});
                   }
                 },

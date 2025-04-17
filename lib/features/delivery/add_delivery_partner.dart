@@ -92,9 +92,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
 
     if (confirmed == true) {
       try {
-        // await _addDeliveryPartner(user);
         if (!mounted) return;
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Added $fullName as delivery partner')),
         );
@@ -108,7 +106,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     }
   }
 
-  Future<void> _addDeliveryPartner(Map<String, dynamic> user) async {
+/*   Future<void> _addDeliveryPartner(Map<String, dynamic> user) async {
     try {
       final userId = user['id']?.toString();
       if (userId == null) throw Exception('User ID is null');
@@ -124,7 +122,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     } catch (e) {
       rethrow;
     }
-  }
+  } */
 
   @override
   Widget build(BuildContext context) {
@@ -222,3 +220,4 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     );
   }
 }
+
