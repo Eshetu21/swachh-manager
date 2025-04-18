@@ -237,6 +237,7 @@ class _RequestListState extends State<RequestList> {
 
   Widget _buildRequestCard(Request req, Address? addr, DateTime requestDate) {
     return Card(
+      color: Colors.grey.shade100,
       elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
@@ -359,3 +360,4 @@ class _RequestListState extends State<RequestList> {
   }
 } */
 }
+

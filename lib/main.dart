@@ -14,7 +14,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-
     await initializeServices();
 
     runApp(

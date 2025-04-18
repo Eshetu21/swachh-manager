@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/models/address.dart';
@@ -65,8 +66,8 @@ class SupabaseRpcService {
                     json['pickup_time']?.toString(),
               });
             } catch (e, stack) {
-              print("Error parsing request item: $e");
-              print(stack);
+              debugPrint("Error parsing request item: $e");
+              debugPrint(stack.toString());
               return Request.fromJson({});
             }
           })
@@ -74,8 +75,8 @@ class SupabaseRpcService {
           .toList();
       return requests;
     } catch (e, stack) {
-      print("Error fetching requests: $e");
-      print(stack);
+      debugPrint("Error fetching requests: $e");
+      debugPrint(stack.toString());
       return [];
     }
   }
@@ -119,7 +120,7 @@ class SupabaseRpcService {
 
       return address;
     } catch (e) {
-      print("Error in fetchAddressById: $e");
+      debugPrint("Error in fetchAddressById: $e");
       return null;
     }
   }
@@ -170,7 +171,7 @@ class SupabaseRpcService {
           .map((e) => DeliveryPartner.fromJson(e))
           .toList();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       rethrow;
     }
   }
@@ -225,7 +226,9 @@ class SupabaseRpcService {
   Future<void> deleteCartItem(String cartId) async {
     try {
       await _client.from('cart').delete().eq('id', cartId);
+      debugPrint('Deleted $cartId');
     } catch (e) {
+      debugPrint('Failed to delete $e');
       throw SkException('Failed to delete cart item: $e');
     }
   }
@@ -278,7 +281,7 @@ class SupabaseRpcService {
 
   Future<Map<String, dynamic>> addDeliveryPartner(String userId) async {
     try {
-      final response = await _client.rpc('add_delivery_partner', params: {
+      final response = await _client.rpc('add_delivery_partner2', params: {
         'user_id_param': userId,
       });
       return response as Map<String, dynamic>;
@@ -287,3 +290,4 @@ class SupabaseRpcService {
     }
   }
 }
+

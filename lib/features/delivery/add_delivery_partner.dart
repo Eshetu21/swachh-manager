@@ -47,7 +47,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
         _isLoading = false;
         _errorMessage = 'Error: ${e.toString()}';
       });
-      print('Error fetching users: $e');
+      debugPrint('Error fetching users: $e');
     }
   }
 
@@ -73,6 +73,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.grey.shade200,
           title: const Text('Add Delivery Partner'),
           content: Text(
               'Are you sure you want to add $fullName as a delivery partner?'),
@@ -83,7 +84,10 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
             ),
             TextButton(
               child: const Text('Add'),
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () async {
+                await _addDeliveryPartner(user);
+                Navigator.of(context).pop(true);
+              },
             ),
           ],
         );
@@ -106,7 +110,8 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     }
   }
 
-/*   Future<void> _addDeliveryPartner(Map<String, dynamic> user) async {
+  Future<void> _addDeliveryPartner(Map<String, dynamic> user) async {
+
     try {
       final userId = user['id']?.toString();
       if (userId == null) throw Exception('User ID is null');
@@ -122,7 +127,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     } catch (e) {
       rethrow;
     }
-  } */
+  }
 
   @override
   Widget build(BuildContext context) {

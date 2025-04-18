@@ -6,16 +6,14 @@ class ShimmeringPickRequestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final Color baseColor = theme.colorScheme.onSurface.withOpacity(0.1);
-    final Color highlightColor = theme.colorScheme.onSurface.withOpacity(0.2);
+    final Color baseColor = Colors.grey.shade300;
+    final Color highlightColor = Colors.grey.shade100;
 
     return Card(
-      elevation: 2,
+      color: Colors.grey.shade100,
+      elevation: 3,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Shimmer.fromColors(
         baseColor: baseColor,
         highlightColor: highlightColor,
@@ -24,49 +22,38 @@ class ShimmeringPickRequestTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
+              _shimmerLine(width: 100),
               const SizedBox(height: 8),
-              Container(
-                width: 80,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
+              _shimmerLine(),
               const SizedBox(height: 8),
-              Container(
-                width: 80,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+              _shimmerLine(width: 80),
+              const SizedBox(height: 12),
+              _shimmerBlock(width: 100, height: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _shimmerLine({double width = double.infinity}) {
+    return Container(
+      width: width,
+      height: 14,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+    );
+  }
+
+  Widget _shimmerBlock({double width = 100, double height = 20}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
       ),
     );
   }

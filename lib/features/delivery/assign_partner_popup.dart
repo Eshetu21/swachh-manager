@@ -54,6 +54,7 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: Colors.grey.shade100,
       title: const Text('Assign Delivery Partner'),
       content: SizedBox(
         width: double.maxFinite,
@@ -67,6 +68,8 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
                 suffixIcon: _isLoading
                     ? const CircularProgressIndicator()
                     : const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.white.withOpacity(0.5)
               ),
               onChanged: _searchPartners,
             ),
@@ -81,6 +84,9 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
                   itemBuilder: (context, index) {
                     final partner = _partners[index];
                     return ListTile(
+                      shape:  RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)
+                      ),
                       leading: const Icon(Icons.person),
                       title: Text(partner.fullName),
                       onTap: () {
@@ -89,7 +95,7 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
                         });
                       },
                       tileColor: _selectedPartner?.id == partner.id
-                          ? Colors.grey[200]
+                          ? Colors.grey.shade300
                           : null,
                     );
                   },
@@ -113,3 +119,4 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
     );
   }
 }
+

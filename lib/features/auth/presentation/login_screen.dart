@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 vertical: verticalPadding,
               ),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
+                constraints: const BoxConstraints(
                   maxWidth: 500,
                 ),
                 child: Form(

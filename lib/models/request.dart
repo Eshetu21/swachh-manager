@@ -34,8 +34,7 @@ class Request {
 
   factory Request.fromJson(Map<String, dynamic> json) {
     return Request(
-      id: json[
-          'id'], // Assuming the id is already a UUID string in the response
+      id: json['id'],
       requestDateTime: DateTime.parse(json['request_date_time']),
       addressId: json['address_id'],
       requestingUserId: json['requesting_user_id'],

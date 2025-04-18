@@ -54,6 +54,7 @@ class _PickOrderPageState extends State<PickOrderPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey.shade100,
         title: const Text('Confirm Deletion'),
         content: const Text('Are you sure you want to delete this item?'),
         actions: [
@@ -181,6 +182,7 @@ class _PickOrderPageState extends State<PickOrderPage> {
               const SizedBox(height: 10),
               Expanded(
                 child: Card(
+                  color: Colors.grey.shade100,
                   elevation: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
@@ -355,7 +357,7 @@ class _PickOrderPageState extends State<PickOrderPage> {
   Future<void> _showAddItemDialog() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => AddItemDialog(),
+      builder: (context) => const AddItemDialog(),
     );
 
     if (result != null && result.isNotEmpty) {
@@ -415,6 +417,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      backgroundColor: Colors.grey.shade100,
       title: const Text('Add New Item'),
       content: SingleChildScrollView(
         child: Form(

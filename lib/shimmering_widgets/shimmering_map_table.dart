@@ -6,10 +6,9 @@ class ShimmeringMapTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final Color baseColor = Colors.grey.shade300;
+    final Color highlightColor = Colors.grey.shade100;
 
-    final Color baseColor = theme.colorScheme.onSurface.withOpacity(0.1);
-    final Color highlightColor = theme.colorScheme.onSurface.withOpacity(0.05);
     return Shimmer.fromColors(
       baseColor: baseColor,
       highlightColor: highlightColor,
@@ -24,16 +23,16 @@ class ShimmeringMapTableWidget extends StatelessWidget {
             1: FractionColumnWidth(0.3),
             2: FractionColumnWidth(0.3),
           },
-          children: [
-            for (int i = 0; i < 5; i++)
-              const TableRow(
-                children: [
-                  ShimmeringTableCell(),
-                  ShimmeringTableCell(),
-                  ShimmeringTableCell(),
-                ],
-              ),
-          ],
+          children: List.generate(
+            5,
+            (_) => const TableRow(
+              children: [
+                ShimmeringTableCell(),
+                ShimmeringTableCell(),
+                ShimmeringTableCell(),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -49,9 +48,11 @@ class ShimmeringTableCell extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-          width: double.infinity,
           height: 16,
-          color: Colors.white,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       ),
     );
