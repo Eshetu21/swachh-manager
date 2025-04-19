@@ -188,6 +188,18 @@ class SupabaseRpcService {
     }
   }
 
+  Future<List<DeliveryPartner>> fetchAllDeliveryPartners() async {
+    try {
+      final response = await _client.rpc('get_all_delivery_partners');
+      return (response as List)
+          .map((e) => DeliveryPartner.fromJson(e))
+          .toList();
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
   Future<void> createTransaction({
     required String requestId,
     required String addressId,

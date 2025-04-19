@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,8 @@ import 'package:kabadmanager/app/app.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart';
 import 'package:kabadmanager/firebase_options.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() {
@@ -50,6 +53,8 @@ Future<void> initializeServices() async {
     await Supabase.initialize(
         url: dotenv.env['SUPABASE_URL'] ?? '',
         anonKey: dotenv.env['SUPABASE_KEY'] ?? '');
+    await setupOneSignal();
+    await _requestNotificationPermissions();
   } catch (e, stack) {
     if (!kDebugMode) {
       FirebaseCrashlytics.instance.recordError(e, stack, fatal: true);
@@ -59,3 +64,22 @@ Future<void> initializeServices() async {
   }
 }
 
+Future<void> _requestNotificationPermissions() async {
+  if (Platform.isAndroid || Platform.isIOS) {
+    var status = await Permission.notification.status;
+    if (!status.isGranted) {
+      if (status.isPermanentlyDenied) {
+        await openAppSettings();
+      } else {
+        await Permission.notification.request();
+      }
+    }
+  }
+}
+
+Future<void> setupOneSignal() async {
+  OneSignal.initialize("f260678b-34a2-4a29-81cc-67aa23cfb02c");
+  await OneSignal.Notifications.requestPermission(true);
+  await OneSignal.User.pushSubscription.optIn();
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+}

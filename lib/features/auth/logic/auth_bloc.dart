@@ -1,6 +1,8 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kabadmanager/core/error_handler/error_handler.dart';
 import 'package:kabadmanager/features/auth/data/auth_repository.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 abstract class AuthEvent {}
 
@@ -34,23 +36,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;
 
   AuthBloc({required this.authRepository}) : super(AuthInitial()) {
-    on<AuthLoginRequested>((event, emit) async {
-      emit(AuthLoading());
-      try {
-        final isAdmin = await authRepository.loginAndVerifyAdmin(
-          event.email,
-          event.password,
-        );
-        if (isAdmin) {
-          emit(AuthSucess(message: "Is Admin"));
-        } else {
-          emit(AuthFailure(error: "You are not an admin"));
-        }
-      } catch (e) {
-        final handled = errorHandler(e);
-        emit(AuthFailure(error: handled.message));
-      }
-    });
+  on<AuthLoginRequested>((event, emit) async {
+  emit(AuthLoading());
+  try {
+    final (userId, isAdmin) = await authRepository.loginAndVerifyAdmin(
+      event.email,
+      event.password,
+    );
+    if (isAdmin) {
+      OneSignal.login(userId);
+      debugPrint(userId);
+      emit(AuthSucess(message: "Is Admin"));
+    } else {
+      emit(AuthFailure(error: "You are not an admin"));
+    }
+  } catch (e) {
+    final handled = errorHandler(e);
+    emit(AuthFailure(error: handled.message));
+  }
+});
+
 
     on<AuthLogout>((event, emit) async {
       emit(AuthLoading());
