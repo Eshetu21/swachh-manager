@@ -225,6 +225,48 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                 ),
               )
             ],
+            if (widget.request.status == RequestStatus.requested) ...[
+              const SizedBox(height: 20),
+              GestureDetector(
+                onTap: () async {
+                  await _rpcService.updateRequestStatus(
+                      widget.requestId, RequestStatus.pending);
+                  Navigator.pop(context, true);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade600,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  width: double.infinity,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Mark as pending",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             if (widget.request.status == RequestStatus.accepted) ...[
               const SizedBox(height: 20),
               GestureDetector(

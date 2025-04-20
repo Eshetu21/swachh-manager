@@ -122,7 +122,8 @@ class _RequestListState extends State<RequestList> {
               final requestDate = req.requestDateTime.toLocal();
               final requestId = requestData[index].request.id;
 
-              final showActions = widget.status == 'requested';
+              final showActions =
+                  widget.status == 'requested' || widget.status == "pending";
 
               return showActions
                   ? _buildSlidableRequest(req, addr, requestDate, requestId)

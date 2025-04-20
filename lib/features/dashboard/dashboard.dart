@@ -19,9 +19,9 @@ class _DashboardState extends State<Dashboard> {
 
   final List<RequestStatus> visibleStatuses = [
     RequestStatus.requested,
-    RequestStatus.accepted,
-    RequestStatus.onTheWay,
     RequestStatus.pending,
+    RequestStatus.accepted,
+    RequestStatus.onTheWay, 
     RequestStatus.picked,
     RequestStatus.denied,
   ];
@@ -172,3 +172,4 @@ class _DashboardState extends State<Dashboard> {
     return "${name[0].toUpperCase()}${name.substring(1)}";
   }
 }
+
