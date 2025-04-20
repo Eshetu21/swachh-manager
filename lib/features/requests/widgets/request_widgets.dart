@@ -2,7 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/contact.dart';
 import 'package:kabadmanager/models/request.dart';
+import 'package:kabadmanager/models/scrap.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+extension ScrapMeasurementExtension on ScrapMeasurement {
+  String get label {
+    switch (this) {
+      case ScrapMeasurement.kg:
+        return 'kg';
+      case ScrapMeasurement.gm:
+        return 'gm';
+      case ScrapMeasurement.ltr:
+        return 'ltr';
+      case ScrapMeasurement.unit:
+        return 'unit';
+      case ScrapMeasurement.qntl:
+        return 'qntl';
+    }
+  }
+}
 
 Widget buildContactCard(Contact contact) {
   return Card(
@@ -159,7 +177,7 @@ Widget buildCartItemCard(Cart item) {
           ),
           const SizedBox(height: 4),
           Text(
-            '₹${item.scrap.price.toStringAsFixed(2)} per ${item.scrap.measure}',
+            '₹${item.scrap.price.toStringAsFixed(2)} per ${item.scrap.measure.label}',
             style: const TextStyle(fontWeight: FontWeight.w500),
           ),
         ],
