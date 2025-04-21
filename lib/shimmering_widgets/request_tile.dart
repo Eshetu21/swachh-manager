@@ -58,4 +58,3 @@ class ShimmeringPickRequestTile extends StatelessWidget {
     );
   }
 }
-

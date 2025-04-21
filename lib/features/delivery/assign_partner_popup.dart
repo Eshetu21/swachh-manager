@@ -237,4 +237,3 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
     );
   }
 }
-

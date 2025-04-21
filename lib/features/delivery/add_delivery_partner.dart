@@ -225,4 +225,3 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     );
   }
 }
-

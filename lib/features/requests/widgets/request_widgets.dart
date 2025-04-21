@@ -218,4 +218,3 @@ Color getStatusColor(RequestStatus status) {
       return Colors.grey;
   }
 }
-

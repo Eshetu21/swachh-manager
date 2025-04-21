@@ -422,4 +422,3 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     );
   }
 }
-

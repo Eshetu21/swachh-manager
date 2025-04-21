@@ -12,4 +12,3 @@ class AppPallete {
   static const Color secondaryColor = Color(0xFFF2583E);
   static const Color transparentColor = Colors.transparent;
 }
-

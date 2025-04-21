@@ -190,4 +190,3 @@ class _DashboardState extends State<Dashboard> {
     return "${name[0].toUpperCase()}${name.substring(1)}";
   }
 }
-

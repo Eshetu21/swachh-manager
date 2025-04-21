@@ -536,4 +536,3 @@ class _AddItemDialogState extends State<AddItemDialog> {
     );
   }
 }
-
