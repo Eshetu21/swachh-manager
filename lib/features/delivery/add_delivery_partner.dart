@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 
 class AddDeliveryPartner extends StatefulWidget {
   const AddDeliveryPartner({super.key});
@@ -68,12 +69,11 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
   Future<void> _showAddConfirmation(
       BuildContext context, Map<String, dynamic> user) async {
     final fullName = user['user_metadata']?['full_name'] ?? 'Unknown User';
-    final confirmed = await showDialog<bool>(
+    await showDialog<bool>(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.grey.shade200,
           title: const Text('Add Delivery Partner'),
           content: Text(
               'Are you sure you want to add $fullName as a delivery partner?'),
@@ -86,6 +86,7 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
               child: const Text('Add'),
               onPressed: () async {
                 await _addDeliveryPartner(user);
+                if (!mounted) return;
                 Navigator.of(context).pop(true);
               },
             ),
@@ -93,39 +94,43 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
         );
       },
     );
-
-    if (confirmed == true) {
-      try {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Added $fullName as delivery partner')),
-        );
-      } catch (e) {
-        if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add partner: ${e.toString()}')),
-        );
-      }
-    }
   }
 
   Future<void> _addDeliveryPartner(Map<String, dynamic> user) async {
-
     try {
       final userId = user['id']?.toString();
       if (userId == null) throw Exception('User ID is null');
-
       final result = await _rpcService.addDeliveryPartner(userId);
 
       if (result.containsKey('error')) {
+        if (result['error']
+            .toString()
+            .contains('User is already a delivery partner')) {
+          if (!mounted) return;
+          ShowSnackbar.show(
+            context,
+            'This user is already a delivery partner!',
+            duration: const Duration(seconds: 3),
+            isError: true,
+          );
+          return;
+        }
         throw Exception(result['error']);
       }
-      if (mounted) {
-        await _fetchUsers();
-      }
+
+      if (!mounted) return;
+      await _fetchUsers();
+      ShowSnackbar.show(
+        context,
+        'Added ${user['user_metadata']?['full_name'] ?? 'Unknown User'} as delivery partner',
+      );
     } catch (e) {
-      rethrow;
+      if (!mounted) return;
+      ShowSnackbar.show(
+        context,
+        'Failed to add partner: ${e.toString()}',
+        isError: true,
+      );
     }
   }
 
@@ -225,3 +230,4 @@ class _AddDeliveryPartnerState extends State<AddDeliveryPartner> {
     );
   }
 }
+

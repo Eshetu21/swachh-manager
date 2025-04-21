@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
+import 'package:kabadmanager/core/theme/app_pallete.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart';
 import 'package:kabadmanager/services/session_service.dart';
+import 'package:kabadmanager/shared/circular_progress_indicator.dart';
 import 'package:kabadmanager/shared/show_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,6 +20,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final SessionService _sessionService = sl<SessionService>();
 
+  bool _obscurePassword = true;
+
   @override
   void initState() {
     super.initState();
@@ -31,8 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  bool _obscurePassword = true;
-
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -45,6 +47,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final verticalPadding = screenHeight * 0.02;
     final buttonHeight = screenHeight * 0.06;
     final betweenFieldsSpace = screenHeight * 0.02;
+
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
@@ -81,26 +85,33 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Text(
                           "Admin Login",
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineLarge
-                              ?.copyWith(
-                                fontSize: isPortrait
-                                    ? screenHeight * 0.035
-                                    : screenWidth * 0.035,
-                              ),
+                          style: theme.textTheme.headlineLarge?.copyWith(
+                            fontSize: isPortrait
+                                ? screenHeight * 0.035
+                                : screenWidth * 0.035,
+                          ),
                         ),
                         SizedBox(height: betweenFieldsSpace * 2),
                         TextFormField(
                           controller: emailController,
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.email,
+                              color: theme.iconTheme.color,
                             ),
                             labelText: 'Email',
+                            labelStyle: TextStyle(
+                              color: theme.hintColor,
+                            ),
                             contentPadding: EdgeInsets.symmetric(
                               vertical: screenHeight * 0.02,
                               horizontal: screenWidth * 0.03,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor,
+                              ),
                             ),
                           ),
                           validator: (value) {
@@ -119,11 +130,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.lock),
+                            prefixIcon: Icon(
+                              Icons.lock,
+                              color: theme.iconTheme.color,
+                            ),
                             labelText: 'Password',
+                            labelStyle: TextStyle(
+                              color: theme.hintColor,
+                            ),
                             contentPadding: EdgeInsets.symmetric(
                               vertical: screenHeight * 0.02,
                               horizontal: screenWidth * 0.03,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: theme.dividerColor,
+                              ),
                             ),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -131,6 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ? Icons.visibility_off
                                     : Icons.visibility,
                                 size: screenWidth * 0.06,
+                                color: theme.iconTheme.color,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -154,17 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity,
                           height: buttonHeight,
                           child: ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  WidgetStateProperty.all(Colors.green),
-                              foregroundColor:
-                                  WidgetStateProperty.all(Colors.white),
-                              shape: WidgetStateProperty.all(
-                                RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
                             onPressed: state is AuthLoading
                                 ? null
                                 : () {
@@ -181,20 +194,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ? SizedBox(
                                     height: buttonHeight * 0.5,
                                     width: buttonHeight * 0.5,
-                                    child: const CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
+                                    child: const AppLoader())
                                 : Text(
                                     "Login",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: screenHeight * 0.02,
-                                    ),
+                                    style: theme.textTheme.bodyLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: screenHeight * 0.02,
+                                        color: AppPallete.whiteColor),
                                   ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
@@ -207,3 +216,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

@@ -5,6 +5,7 @@ import 'package:kabadmanager/features/dashboard/dashboard.dart';
 
 class KabadWalaApp extends StatelessWidget {
   final String initialRoute;
+
   const KabadWalaApp({super.key, required this.initialRoute});
 
   @override
@@ -12,7 +13,8 @@ class KabadWalaApp extends StatelessWidget {
     return MaterialApp(
       title: 'KabadManager',
       theme: AppTheme.lightThemeMode,
-      darkTheme: ThemeData.dark(), 
+      darkTheme: AppTheme.darkThemeMode,
+      themeMode: ThemeMode.system, 
       initialRoute: initialRoute,
       routes: {
         '/login': (context) => const LoginScreen(),
@@ -21,4 +23,3 @@ class KabadWalaApp extends StatelessWidget {
     );
   }
 }
-
