@@ -35,6 +35,7 @@ class AppTheme {
       outlinedButtonTheme: const OutlinedButtonThemeData(
         style: ButtonStyle(
           backgroundColor: WidgetStatePropertyAll(AppPallete.primaryColor),
+          foregroundColor: WidgetStatePropertyAll(AppPallete.whiteColor),
           shape: WidgetStatePropertyAll(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -68,6 +69,9 @@ class AppTheme {
       ),
       dialogTheme: DialogTheme(
         backgroundColor: Colors.grey.shade200,
+      ),
+      cardTheme: CardTheme(
+        color: AppPallete.lightCardColor,
       ));
 
   static final darkThemeMode = ThemeData(
@@ -96,30 +100,16 @@ class AppTheme {
       errorBorder: _border(AppPallete.errorColor),
       focusedErrorBorder: _border(AppPallete.errorColor),
     ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
+    outlinedButtonTheme: const OutlinedButtonThemeData(
       style: ButtonStyle(
-        shape: const WidgetStatePropertyAll(
+        backgroundColor: WidgetStatePropertyAll(AppPallete.primaryColor),
+        foregroundColor: WidgetStatePropertyAll(AppPallete.whiteColor),
+        shape: WidgetStatePropertyAll(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(12)),
           ),
         ),
-        minimumSize: const WidgetStatePropertyAll(Size(double.infinity, 45)),
-        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.disabled)) {
-              return AppPallete.whiteColor;
-            }
-            return AppPallete.whiteColor;
-          },
-        ),
-        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.disabled)) {
-              return AppPallete.whiteColor;
-            }
-            return AppPallete.whiteColor;
-          },
-        ),
+        minimumSize: WidgetStatePropertyAll(Size(double.infinity, 45)),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(

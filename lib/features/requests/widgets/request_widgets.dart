@@ -22,7 +22,7 @@ extension ScrapMeasurementExtension on ScrapMeasurement {
   }
 }
 
-Widget buildContactCard(Contact contact) {
+Widget buildContactCard(BuildContext context, Contact contact) {
   return Card(
     color: Colors.grey.shade100,
     child: Padding(
@@ -39,7 +39,7 @@ Widget buildContactCard(Contact contact) {
           ),
           const SizedBox(height: 12),
           if (contact.name?.isNotEmpty ?? false)
-            buildDetailRow('Name', contact.name!),
+            buildDetailRow(context,'Name', contact.name!),
           if (contact.phone?.isNotEmpty ?? false)
             buildDetailRowWithAction(
               'Phone',
@@ -58,7 +58,7 @@ Widget buildContactCard(Contact contact) {
   );
 }
 
-Widget buildDetailRow(String label, String value) {
+Widget buildDetailRow(BuildContext context,String label, String value) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4.0),
     child: Row(
@@ -218,3 +218,4 @@ Color getStatusColor(RequestStatus status) {
       return Colors.grey;
   }
 }
+

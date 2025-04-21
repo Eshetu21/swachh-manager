@@ -6,11 +6,16 @@ class ShimmeringPickRequestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color baseColor = Colors.grey.shade300;
-    final Color highlightColor = Colors.grey.shade100;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color baseColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade300;
+    final Color highlightColor =
+        isDark ? Colors.grey.shade700 : Colors.grey.shade100;
+    final Color blockColor = isDark ? Colors.grey.shade900 : Colors.white;
 
     return Card(
-      color: Colors.grey.shade100,
+      color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
       elevation: 3,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -22,13 +27,13 @@ class ShimmeringPickRequestTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _shimmerLine(width: 100),
+              _shimmerLine(blockColor, width: 100),
               const SizedBox(height: 8),
-              _shimmerLine(),
+              _shimmerLine(blockColor),
               const SizedBox(height: 8),
-              _shimmerLine(width: 80),
+              _shimmerLine(blockColor, width: 80),
               const SizedBox(height: 12),
-              _shimmerBlock(width: 100, height: 20),
+              _shimmerBlock(blockColor, width: 100, height: 20),
             ],
           ),
         ),
@@ -36,25 +41,26 @@ class ShimmeringPickRequestTile extends StatelessWidget {
     );
   }
 
-  Widget _shimmerLine({double width = double.infinity}) {
+  Widget _shimmerLine(Color color, {double width = double.infinity}) {
     return Container(
       width: width,
       height: 14,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color,
         borderRadius: BorderRadius.circular(8),
       ),
     );
   }
 
-  Widget _shimmerBlock({double width = 100, double height = 20}) {
+  Widget _shimmerBlock(Color color, {double width = 100, double height = 20}) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: color,
         borderRadius: BorderRadius.circular(12),
       ),
     );
   }
 }
+

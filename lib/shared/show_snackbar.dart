@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:kabadmanager/core/theme/app_pallete.dart';
 
 class ShowSnackbar {
   static void show(
@@ -9,13 +8,12 @@ class ShowSnackbar {
     bool isError = false,
   }) {
     if (!context.mounted) return;
-
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final backgroundColor =
-        isError ? AppPallete.errorColor : AppPallete.successColor;
-
+        isError ? colorScheme.errorContainer : colorScheme.inverseSurface;
     final textColor =
-        isError ? AppPallete.lightBackgroundColor : AppPallete.whiteColor;
+        isError ? colorScheme.onErrorContainer : colorScheme.onInverseSurface;
 
     final snackBar = SnackBar(
       behavior: SnackBarBehavior.floating,
@@ -23,7 +21,7 @@ class ShowSnackbar {
         borderRadius: BorderRadius.circular(8),
       ),
       margin: const EdgeInsets.all(12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       backgroundColor: backgroundColor,
       content: Text(
         message,

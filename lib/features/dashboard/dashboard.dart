@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
+import 'package:kabadmanager/core/theme/app_pallete.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
+import 'package:kabadmanager/features/dashboard/widgets/status_bar.dart';
 import 'package:kabadmanager/features/delivery/add_delivery_partner.dart';
 import 'package:kabadmanager/features/requests/request_list.dart';
 import 'package:kabadmanager/models/request.dart';
@@ -138,35 +140,11 @@ class _DashboardState extends State<Dashboard> {
                       ),
                       itemCount: visibleStatuses.length,
                       itemBuilder: (context, index) {
-                        final isSelected = selectedIndex == index;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() => selectedIndex = index);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 16 : 24,
-                            ),
-                            margin: EdgeInsets.symmetric(
-                              horizontal: isSmallScreen ? 6 : 8,
-                              vertical: isSmallScreen ? 8 : 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.green
-                                  : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              _formatStatus(visibleStatuses[index]),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: isSmallScreen ? 14 : 16,
-                              ),
-                            ),
-                          ),
+                        return StatusTab(
+                          label: _formatStatus(visibleStatuses[index]),
+                          isSelected: selectedIndex == index,
+                          onTap: () => setState(() => selectedIndex = index),
+                          isSmallScreen: isSmallScreen,
                         );
                       },
                     ),
@@ -190,3 +168,4 @@ class _DashboardState extends State<Dashboard> {
     return "${name[0].toUpperCase()}${name.substring(1)}";
   }
 }
+

@@ -98,25 +98,25 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildDetailRow('Request ID', widget.request.id),
+                    buildDetailRow(context,'Request ID', widget.request.id),
                     const SizedBox(height: 8),
                     buildStatusWidget(widget.request.status),
                     const SizedBox(height: 8),
                     if (widget.request.qtyRange != null)
-                      buildDetailRow(
+                      buildDetailRow(context,
                           'Quantity Range', widget.request.qtyRange!),
-                    buildDetailRow(
+                    buildDetailRow(context,
                       'Request Date',
                       DateFormat('MMM d, y H:mm')
                           .format(widget.request.requestDateTime),
                     ),
-                    buildDetailRow(
+                    buildDetailRow(context,
                       'Schedule Date',
                       DateFormat('MMM d, y H:mm')
                           .format(widget.request.scheduleDateTime),
                     ),
                     if (widget.request.totalPrice > 0)
-                      buildDetailRow(
+                      buildDetailRow(context,
                         'Total Price',
                         '₹${widget.request.totalPrice.toStringAsFixed(2)}',
                       ),
@@ -125,7 +125,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
               ),
             ),
             const SizedBox(height: 20),
-            if (widget.address != null) _buildAddressCard(widget.address!),
+            if (widget.address != null)
+              _buildAddressCard(context, widget.address!),
             const SizedBox(height: 20),
             FutureBuilder<Contact>(
               future: _contactDetails,
@@ -135,7 +136,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                 } else if (snapshot.hasError) {
                   return const SizedBox();
                 } else if (snapshot.hasData) {
-                  return buildContactCard(snapshot.data!);
+                  return buildContactCard(context,snapshot.data!);
                 }
                 return const SizedBox();
               },
@@ -362,9 +363,8 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     );
   }
 
-  Widget _buildAddressCard(Address address) {
+  Widget _buildAddressCard(BuildContext context, Address address) {
     return Card(
-      color: Colors.grey.shade100,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -379,14 +379,14 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
             ),
             const SizedBox(height: 12),
             if (address.label.isNotEmpty)
-              buildDetailRow('Label', address.label),
+              buildDetailRow(context,'Label', address.label),
             if (address.houseStreetNo?.isNotEmpty ?? false)
-              buildDetailRow('House/Street', address.houseStreetNo!),
-            buildDetailRow('Address', address.address),
+              buildDetailRow(context,'House/Street', address.houseStreetNo!),
+            buildDetailRow(context,'Address', address.address),
             if (address.apartmentRoadAreaLandMark?.isNotEmpty ?? false)
-              buildDetailRow('Landmark', address.apartmentRoadAreaLandMark!),
+              buildDetailRow(context,'Landmark', address.apartmentRoadAreaLandMark!),
             if (address.phoneNumber?.isNotEmpty ?? false)
-              buildDetailRow('Phone', address.phoneNumber!),
+              buildDetailRow(context,'Phone', address.phoneNumber!),
             if (address.latlng.isNotEmpty) ...[
               const SizedBox(height: 12),
               SizedBox(
@@ -422,3 +422,4 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
     );
   }
 }
+

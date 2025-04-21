@@ -124,6 +124,7 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
 import 'package:flutter/material.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 
 class AssignPartnerPopup extends StatefulWidget {
   final String requestId;
@@ -156,16 +157,14 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
       setState(() {
         _isLoading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching partners: $e')),
-      );
+      ShowSnackbar.show(context, isError: true, "Error fetching partners: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
-      backgroundColor: Colors.grey.shade100,
       title: const Text('Assign Delivery Partner'),
       content: SizedBox(
         width: double.maxFinite,
@@ -213,7 +212,7 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
                         });
                       },
                       tileColor: _selectedPartner?.id == partner.id
-                          ? Colors.grey.shade300
+                          ? theme.focusColor
                           : null,
                     );
                   },
@@ -237,3 +236,4 @@ class _AssignPartnerPopupState extends State<AssignPartnerPopup> {
     );
   }
 }
+

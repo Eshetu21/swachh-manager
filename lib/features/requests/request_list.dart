@@ -7,6 +7,7 @@ import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 import 'package:kabadmanager/shimmering_widgets/request_tile.dart';
 
 class RequestWithAddress {
@@ -157,9 +158,7 @@ class _RequestListState extends State<RequestList> {
               onPressed: (_) async {
                 await _rpcService.updateRequestStatus(
                     requestId, RequestStatus.denied);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Request Denied')),
-                );
+                ShowSnackbar.show(context, isError: true, "Request Denied");
                 setState(() {
                   _requestsWithAddresses = _fetchRequestsAndAddresses();
                 });
@@ -188,20 +187,13 @@ class _RequestListState extends State<RequestList> {
                       requestId: requestId,
                       partnerId: partner.id,
                     );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content:
-                              Text('Partner assigned and request accepted')),
-                    );
-
+                    ShowSnackbar.show(
+                        context, "Partner assigned and request accepted");
                     setState(() {
                       _requestsWithAddresses = _fetchRequestsAndAddresses();
                     });
                   } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: ${e.toString()}')),
-                    );
+                    ShowSnackbar.show(context, isError: true, e.toString());
                   }
                 }
               },
@@ -211,7 +203,7 @@ class _RequestListState extends State<RequestList> {
             ),
           ],
         ),
-        child: _buildRequestCard(req, addr, requestDate),
+        child: _buildRequestCard(context, req, addr, requestDate),
       ),
     );
   }
@@ -232,13 +224,13 @@ class _RequestListState extends State<RequestList> {
           _refreshData();
         });
       },
-      child: _buildRequestCard(req, addr, requestDate),
+      child: _buildRequestCard(context, req, addr, requestDate),
     );
   }
 
-  Widget _buildRequestCard(Request req, Address? addr, DateTime requestDate) {
+  Widget _buildRequestCard(
+      BuildContext context, Request req, Address? addr, DateTime requestDate) {
     return Card(
-      color: Colors.grey.shade100,
       elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
@@ -361,3 +353,4 @@ class _RequestListState extends State<RequestList> {
   }
 } */
 }
+

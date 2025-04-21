@@ -6,8 +6,13 @@ class ShimmeringMapTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color baseColor = Colors.grey.shade300;
-    final Color highlightColor = Colors.grey.shade100;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final Color baseColor =
+        isDark ? Colors.grey.shade800 : Colors.grey.shade300;
+    final Color highlightColor =
+        isDark ? Colors.grey.shade700 : Colors.grey.shade100;
+    final Color cellColor = isDark ? Colors.grey.shade900 : Colors.white;
 
     return Shimmer.fromColors(
       baseColor: baseColor,
@@ -25,11 +30,11 @@ class ShimmeringMapTableWidget extends StatelessWidget {
           },
           children: List.generate(
             5,
-            (_) => const TableRow(
+            (_) => TableRow(
               children: [
-                ShimmeringTableCell(),
-                ShimmeringTableCell(),
-                ShimmeringTableCell(),
+                ShimmeringTableCell(color: cellColor),
+                ShimmeringTableCell(color: cellColor),
+                ShimmeringTableCell(color: cellColor),
               ],
             ),
           ),
@@ -40,7 +45,8 @@ class ShimmeringMapTableWidget extends StatelessWidget {
 }
 
 class ShimmeringTableCell extends StatelessWidget {
-  const ShimmeringTableCell({super.key});
+  final Color color;
+  const ShimmeringTableCell({super.key, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +56,7 @@ class ShimmeringTableCell extends StatelessWidget {
         child: Container(
           height: 16,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: color,
             borderRadius: BorderRadius.circular(8),
           ),
         ),
@@ -58,3 +64,4 @@ class ShimmeringTableCell extends StatelessWidget {
     );
   }
 }
+
