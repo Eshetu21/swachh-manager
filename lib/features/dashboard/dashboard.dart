@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
-import 'package:kabadmanager/core/theme/app_pallete.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
 import 'package:kabadmanager/features/dashboard/widgets/status_bar.dart';
 import 'package:kabadmanager/features/delivery/add_delivery_partner.dart';
 import 'package:kabadmanager/features/requests/request_list.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/services/session_service.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
@@ -96,9 +96,7 @@ class _DashboardState extends State<Dashboard> {
           if (state is auth_bloc.AuthInitial) {
             Navigator.pushReplacementNamed(context, '/login');
           } else if (state is auth_bloc.AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.error)),
-            );
+            ShowSnackbar.show(context, isError: true, state.error);
           }
         },
         child: Row(

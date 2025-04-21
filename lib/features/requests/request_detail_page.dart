@@ -5,6 +5,7 @@ import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
 import 'package:kabadmanager/features/requests/pick_request.dart';
 import 'package:kabadmanager/features/requests/widgets/request_widgets.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/request.dart';
@@ -49,14 +50,12 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
       try {
         await _rpcService.acceptRequestWithPartner(
             requestId: widget.requestId, partnerId: partner.id);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text("Request accepted and partner assigned")));
+        ShowSnackbar.show(context, "Request accepted and partner assigned");
         setState(() {
           widget.request.status = RequestStatus.accepted;
         });
       } catch (e) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+        ShowSnackbar.show(context, 'Error: ${e.toString()}', isError: true);
       }
     }
   }
@@ -92,31 +91,33 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
-              color: Colors.grey.shade100,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildDetailRow(context,'Request ID', widget.request.id),
+                    buildDetailRow(context, 'Request ID', widget.request.id),
                     const SizedBox(height: 8),
                     buildStatusWidget(widget.request.status),
                     const SizedBox(height: 8),
                     if (widget.request.qtyRange != null)
-                      buildDetailRow(context,
-                          'Quantity Range', widget.request.qtyRange!),
-                    buildDetailRow(context,
+                      buildDetailRow(
+                          context, 'Quantity Range', widget.request.qtyRange!),
+                    buildDetailRow(
+                      context,
                       'Request Date',
                       DateFormat('MMM d, y H:mm')
                           .format(widget.request.requestDateTime),
                     ),
-                    buildDetailRow(context,
+                    buildDetailRow(
+                      context,
                       'Schedule Date',
                       DateFormat('MMM d, y H:mm')
                           .format(widget.request.scheduleDateTime),
                     ),
                     if (widget.request.totalPrice > 0)
-                      buildDetailRow(context,
+                      buildDetailRow(
+                        context,
                         'Total Price',
                         '₹${widget.request.totalPrice.toStringAsFixed(2)}',
                       ),
@@ -136,7 +137,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                 } else if (snapshot.hasError) {
                   return const SizedBox();
                 } else if (snapshot.hasData) {
-                  return buildContactCard(context,snapshot.data!);
+                  return buildContactCard(context, snapshot.data!);
                 }
                 return const SizedBox();
               },
@@ -155,7 +156,6 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
 
                 final cartItems = snapshot.data!;
                 return Card(
-                  color: Colors.grey.shade100,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -178,7 +178,7 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
                           },
                         ),
                         const SizedBox(height: 16),
-                        buildTotalPrice(cartItems),
+                        buildTotalPrice(context, cartItems),
                       ],
                     ),
                   ),
@@ -379,14 +379,15 @@ class _RequestDetailPageState extends State<RequestDetailPage> {
             ),
             const SizedBox(height: 12),
             if (address.label.isNotEmpty)
-              buildDetailRow(context,'Label', address.label),
+              buildDetailRow(context, 'Label', address.label),
             if (address.houseStreetNo?.isNotEmpty ?? false)
-              buildDetailRow(context,'House/Street', address.houseStreetNo!),
-            buildDetailRow(context,'Address', address.address),
+              buildDetailRow(context, 'House/Street', address.houseStreetNo!),
+            buildDetailRow(context, 'Address', address.address),
             if (address.apartmentRoadAreaLandMark?.isNotEmpty ?? false)
-              buildDetailRow(context,'Landmark', address.apartmentRoadAreaLandMark!),
+              buildDetailRow(
+                  context, 'Landmark', address.apartmentRoadAreaLandMark!),
             if (address.phoneNumber?.isNotEmpty ?? false)
-              buildDetailRow(context,'Phone', address.phoneNumber!),
+              buildDetailRow(context, 'Phone', address.phoneNumber!),
             if (address.latlng.isNotEmpty) ...[
               const SizedBox(height: 12),
               SizedBox(

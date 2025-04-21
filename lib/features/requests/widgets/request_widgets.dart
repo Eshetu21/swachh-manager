@@ -24,7 +24,6 @@ extension ScrapMeasurementExtension on ScrapMeasurement {
 
 Widget buildContactCard(BuildContext context, Contact contact) {
   return Card(
-    color: Colors.grey.shade100,
     child: Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -123,41 +122,43 @@ Widget buildStatusWidget(RequestStatus status) {
   );
 }
 
-Widget buildTotalPrice(List<Cart> cartItems) {
+Widget buildTotalPrice(BuildContext context,List<Cart> cartItems) {
   final total =
       cartItems.fold(0.0, (sum, item) => sum + (item.scrap.price * item.qty));
-  return Container(
-    padding: const EdgeInsets.all(16),
+  return Card(
+    /* padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.grey[100],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text(
-          'TOTAL',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+      borderRadius: BorderRadius.circular(8), 
+    )*/
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'TOTAL',
+             style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ), 
           ),
-        ),
-        Text(
-          '₹${total.toStringAsFixed(2)}',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
+          Text(
+            '₹${total.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }
 
 Widget buildCartItemCard(Cart item) {
   return Card(
-    color: Colors.grey.shade300,
     margin: const EdgeInsets.symmetric(vertical: 4),
     child: ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -215,7 +216,7 @@ Color getStatusColor(RequestStatus status) {
     case RequestStatus.requested:
       return Colors.orange;
     case RequestStatus.pending:
-      return Colors.grey;
+      return Colors.orange;
   }
 }
 

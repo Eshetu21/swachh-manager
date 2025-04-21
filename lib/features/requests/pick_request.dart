@@ -5,6 +5,7 @@ import 'package:kabadmanager/models/cart.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/models/scrap.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
+import 'package:kabadmanager/shared/show_snackbar.dart';
 
 class PickOrderPage extends StatefulWidget {
   const PickOrderPage({
@@ -31,6 +32,7 @@ class _PickOrderPageState extends State<PickOrderPage> {
   double _totalPrice = 0.0;
   final Map<String, Map<String, dynamic>> _orderItems = {};
   List<Cart> _allCartItems = [];
+  bool _isCreatingTransaction = false;
 
   @override
   void initState() {
@@ -82,15 +84,12 @@ class _PickOrderPageState extends State<PickOrderPage> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Item deleted successfully')),
-          );
+          ShowSnackbar.show(context, "Item deleted successfully");
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete item: ${e.toString()}')),
-          );
+          ShowSnackbar.show(context, 'Failed to delete item: ${e.toString()}',
+              isError: true);
         }
       }
     }
@@ -108,11 +107,86 @@ class _PickOrderPageState extends State<PickOrderPage> {
   Future<void> _createTransaction() async {
     if (!_formKey.currentState!.validate()) return;
     if (_orderItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add at least one item')),
-      );
+      ShowSnackbar.show(context, 'Please add at least one item');
       return;
     }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Transaction'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('Payment Mode: ',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(_selectedPaymentMode),
+                ],
+              ),
+              const SizedBox(height: 8),
+              const Text('Items:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              ..._orderItems.entries.map((entry) {
+                final itemName = entry.key;
+                final data = entry.value;
+                final total =
+                    (double.tryParse(data['quantity'].toString()) ?? 0) *
+                        (data['amount'] as double);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Text(itemName, overflow: TextOverflow.ellipsis),
+                      ),
+                      Expanded(
+                        child:
+                            Text('${data['quantity']} ${data['measureType']}'),
+                      ),
+                      Expanded(
+                        child: Text('₹${total.toStringAsFixed(2)}'),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const Divider(height: 24),
+              Row(
+                children: [
+                  const Text('Total Amount: ',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('₹${_totalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text('Are you sure you want to proceed?'),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isCreatingTransaction = true;
+    });
 
     try {
       await _supabaseService.createTransaction(
@@ -128,18 +202,20 @@ class _PickOrderPageState extends State<PickOrderPage> {
           widget.request.id, RequestStatus.picked);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Transaction created successfully')),
-        );
+        ShowSnackbar.show(context, 'Transaction created successfully');
         Navigator.of(context).pop(true);
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Failed to create transaction: ${e.toString()}')),
-        );
+        ShowSnackbar.show(
+            context, 'Failed to create transaction: ${e.toString()}',isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCreatingTransaction = false;
+        });
       }
     }
   }
@@ -182,7 +258,6 @@ class _PickOrderPageState extends State<PickOrderPage> {
               const SizedBox(height: 10),
               Expanded(
                 child: Card(
-                  color: Colors.grey.shade100,
                   elevation: 2,
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
@@ -334,14 +409,24 @@ class _PickOrderPageState extends State<PickOrderPage> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: OutlinedButton.icon(
-                      icon: const Icon(Icons.check_circle),
-                      label: const Text('Create transaction'),
-                      onPressed: _createTransaction,
+                      icon: _isCreatingTransaction
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Icon(Icons.check_circle),
+                      label: _isCreatingTransaction
+                          ? const Text('Processing...')
+                          : const Text('Create transaction'),
+                      onPressed:
+                          _isCreatingTransaction ? null : _createTransaction,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor:
-                            Theme.of(context).colorScheme.onPrimary,
                       ),
                     ),
                   ),
@@ -382,15 +467,12 @@ class _PickOrderPageState extends State<PickOrderPage> {
         });
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Item added successfully')),
-          );
+          ShowSnackbar.show(context, 'Item added successfully');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add item: ${e.toString()}')),
-          );
+          ShowSnackbar.show(context, 'Failed to add item: ${e.toString()}',
+              isError: true);
         }
       }
     }
@@ -417,7 +499,6 @@ class _AddItemDialogState extends State<AddItemDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: Colors.grey.shade100,
       title: const Text('Add New Item'),
       content: SingleChildScrollView(
         child: Form(
@@ -514,7 +595,7 @@ class _AddItemDialogState extends State<AddItemDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        TextButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               final result = {
@@ -536,3 +617,4 @@ class _AddItemDialogState extends State<AddItemDialog> {
     );
   }
 }
+

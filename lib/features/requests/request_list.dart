@@ -81,7 +81,7 @@ class _RequestListState extends State<RequestList> {
         return Colors.green.shade600;
       case 'denied':
         return Colors.red.shade600;
-      case 'on_the_way':
+      case 'ontheway':
         return Colors.blue.shade600;
       default:
         return Colors.orange.shade700;
