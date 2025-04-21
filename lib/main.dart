@@ -10,6 +10,7 @@ import 'package:kabadmanager/app/app.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart';
 import 'package:kabadmanager/firebase_options.dart';
+import 'package:kabadmanager/services/session_service.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,10 +20,16 @@ void main() {
     WidgetsFlutterBinding.ensureInitialized();
     await initializeServices();
 
+    final sessionService = sl<SessionService>();
+    final isLoggedIn = await sessionService.isLoggedIn();
+    final isAdmin = await sessionService.isAdmin();
+
     runApp(
       BlocProvider(
         create: (_) => sl<AuthBloc>(),
-        child: const KabadWalaApp(),
+        child: KabadWalaApp(
+          initialRoute: isLoggedIn && isAdmin ? '/dashboard' : '/login',
+        ),
       ),
     );
   }, (error, stack) {
@@ -83,3 +90,4 @@ Future<void> setupOneSignal() async {
   await OneSignal.User.pushSubscription.optIn();
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 }
+

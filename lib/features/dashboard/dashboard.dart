@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kabadmanager/core/dependency_container.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
 import 'package:kabadmanager/features/delivery/add_delivery_partner.dart';
 import 'package:kabadmanager/features/requests/request_list.dart';
 import 'package:kabadmanager/models/request.dart';
+import 'package:kabadmanager/services/session_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class Dashboard extends StatefulWidget {
@@ -16,12 +18,28 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
   final user = Supabase.instance.client.auth.currentUser;
   int selectedIndex = 0;
+  final SessionService _sessionService = sl<SessionService>();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final isLoggedIn = await _sessionService.isLoggedIn();
+    if (!isLoggedIn) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
 
   final List<RequestStatus> visibleStatuses = [
     RequestStatus.requested,
     RequestStatus.pending,
     RequestStatus.accepted,
-    RequestStatus.onTheWay, 
+    RequestStatus.onTheWay,
     RequestStatus.picked,
     RequestStatus.denied,
   ];

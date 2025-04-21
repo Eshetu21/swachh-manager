@@ -21,5 +21,6 @@
     "http",
     "net"
   ],
-  "yaml.schemaStore.enable": false
+  "yaml.schemaStore.enable": false,
+  "postman.settings.dotenv-detection-notification-visibility": false
 }
