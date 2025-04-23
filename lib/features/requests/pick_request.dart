@@ -56,7 +56,6 @@ class _PickOrderPageState extends State<PickOrderPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade100,
         title: const Text('Confirm Deletion'),
         content: const Text('Are you sure you want to delete this item?'),
         actions: [
