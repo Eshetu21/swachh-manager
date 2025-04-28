@@ -8,6 +8,7 @@ class AppPallete {
   static const Color lightHintTextColor = Color(0xFF8C8C8C);
   static Color lightCardColor = Colors.grey.shade100;
   static const Color lightIconColor = Color(0xFF606060);
+   static const Color lightChipBackgroundColor = Color(0xFFF1F1F1);
 
   // Dark theme colors
   static const Color darkBackgroundColor = Color(0xFF121212);
@@ -16,6 +17,7 @@ class AppPallete {
   static const Color darkHintTextColor = Color(0xFFAAAAAA);
   static const Color darkCardColor = Color(0xFF1F1F1F);
   static const Color darkIconColor = Color(0xFFB0B0B0);
+  static const Color darkChipBackgroundColor = Color(0xFF2D2D2D);
 
   // Common colors (unchanged)
   static const Color whiteColor = Colors.white;

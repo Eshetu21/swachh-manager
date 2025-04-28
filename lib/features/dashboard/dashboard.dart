@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:kabadmanager/core/dependency_container.dart';
 import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
 import 'package:kabadmanager/features/dashboard/widgets/status_bar.dart';
@@ -20,10 +21,20 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   final user = Supabase.instance.client.auth.currentUser;
-  int selectedIndex = 0;
   final SessionService _sessionService = sl<SessionService>();
+
+  int selectedIndex = 0;
   SortOption? _currentSort;
-  DateTimeRange? _currentDateRange;
+  DateTime? _currentDate;
+
+  final List<RequestStatus> visibleStatuses = [
+    RequestStatus.requested,
+    RequestStatus.pending,
+    RequestStatus.accepted,
+    RequestStatus.onTheWay,
+    RequestStatus.picked,
+    RequestStatus.denied,
+  ];
 
   @override
   void initState() {
@@ -39,15 +50,6 @@ class _DashboardState extends State<Dashboard> {
       }
     }
   }
-
-  final List<RequestStatus> visibleStatuses = [
-    RequestStatus.requested,
-    RequestStatus.pending,
-    RequestStatus.accepted,
-    RequestStatus.onTheWay,
-    RequestStatus.picked,
-    RequestStatus.denied,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -67,55 +69,21 @@ class _DashboardState extends State<Dashboard> {
                 context: context,
                 builder: (context) => RequestFilter(
                   currentStatus: visibleStatuses[selectedIndex].name,
-                  onFilterApplied: (status, sortOption, dateRange) {
+                  onFilterApplied: (sortOption, dateRange) {
                     setState(() {
                       _currentSort = sortOption;
-                      _currentDateRange = dateRange;
+                      _currentDate = dateRange;
                     });
                   },
-                  onFiltersChanged: () {
-                    setState(() {});
-                  },
+                  currentSort: _currentSort,
+                  currentDate: _currentDate,
                 ),
               );
             },
           ),
         ],
       ),
-      drawer: isSmallScreen || !isPortrait
-          ? Drawer(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  UserAccountsDrawerHeader(
-                    accountName: const Text("Admin"),
-                    accountEmail: Text(user?.email ?? "No email"),
-                    currentAccountPicture: const CircleAvatar(
-                      child: Icon(Icons.admin_panel_settings, size: 30),
-                    ),
-                    decoration: const BoxDecoration(color: Colors.green),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.add_box),
-                    title: const Text("Add Delivery Partner"),
-                    onTap: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const AddDeliveryPartner()));
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.logout),
-                    title: const Text("Logout"),
-                    onTap: () {
-                      Navigator.pop(context);
-                      BlocProvider.of<auth_bloc.AuthBloc>(context)
-                          .add(auth_bloc.AuthLogout());
-                    },
-                  ),
-                ],
-              ),
-            )
-          : null,
+      drawer: isSmallScreen || !isPortrait ? _buildDrawer() : null,
       body: BlocListener<auth_bloc.AuthBloc, auth_bloc.AuthState>(
         listener: (context, state) {
           if (state is auth_bloc.AuthInitial) {
@@ -124,59 +92,45 @@ class _DashboardState extends State<Dashboard> {
             ShowSnackbar.show(context, isError: true, state.error);
           }
         },
-        child: Row(
+        child: Column(
           children: [
-            if (!isSmallScreen && isPortrait)
-              Container(
-                width: screenWidth * 0.2,
-                color: Colors.grey[100],
-                child: Column(
-                  children: [
-                    UserAccountsDrawerHeader(
-                      accountName: const Text("Admin"),
-                      accountEmail: Text(user?.email ?? "No email"),
-                      currentAccountPicture: const CircleAvatar(
-                        child: Icon(Icons.admin_panel_settings, size: 30),
-                      ),
-                      decoration: const BoxDecoration(color: Colors.green),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.logout),
-                      title: const Text("Logout"),
-                      onTap: () {
-                        BlocProvider.of<auth_bloc.AuthBloc>(context)
-                            .add(auth_bloc.AuthLogout());
-                      },
-                    ),
-                  ],
-                ),
-              ),
+            if (_currentSort != null || _currentDate != null)
+              _buildActiveFilters(),
             Expanded(
-              child: Column(
+              child: Row(
                 children: [
-                  SizedBox(
-                    height: isSmallScreen ? 50 : 60,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isSmallScreen ? 8 : 16,
-                      ),
-                      itemCount: visibleStatuses.length,
-                      itemBuilder: (context, index) {
-                        return StatusTab(
-                          label: _formatStatus(visibleStatuses[index]),
-                          isSelected: selectedIndex == index,
-                          onTap: () => setState(() => selectedIndex = index),
-                          isSmallScreen: isSmallScreen,
-                        );
-                      },
-                    ),
-                  ),
+                  if (!isSmallScreen && isPortrait)
+                    _buildSideDrawer(screenWidth),
                   Expanded(
-                    child: RequestList(
-                      status: visibleStatuses[selectedIndex].name,
-                      sortOption: _currentSort,
-                      dateRange: _currentDateRange,
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: isSmallScreen ? 50 : 60,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 8 : 16,
+                            ),
+                            itemCount: visibleStatuses.length,
+                            itemBuilder: (context, index) {
+                              return StatusTab(
+                                label: _formatStatus(visibleStatuses[index]),
+                                isSelected: selectedIndex == index,
+                                onTap: () =>
+                                    setState(() => selectedIndex = index),
+                                isSmallScreen: isSmallScreen,
+                              );
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: RequestList(
+                            status: visibleStatuses[selectedIndex].name,
+                            sortOption: _currentSort,
+                            selectedDate: _currentDate,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -184,6 +138,110 @@ class _DashboardState extends State<Dashboard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: const Text("Admin"),
+            accountEmail: Text(user?.email ?? "No email"),
+            currentAccountPicture: const CircleAvatar(
+              child: Icon(Icons.admin_panel_settings, size: 30),
+            ),
+            decoration: const BoxDecoration(color: Colors.green),
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_box),
+            title: const Text("Add Delivery Partner"),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => const AddDeliveryPartner()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text("Logout"),
+            onTap: () {
+              Navigator.pop(context);
+              BlocProvider.of<auth_bloc.AuthBloc>(context)
+                  .add(auth_bloc.AuthLogout());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSideDrawer(double screenWidth) {
+    return Container(
+      width: screenWidth * 0.2,
+      color: Colors.grey[100],
+      child: Column(
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: const Text("Admin"),
+            accountEmail: Text(user?.email ?? "No email"),
+            currentAccountPicture: const CircleAvatar(
+              child: Icon(Icons.admin_panel_settings, size: 30),
+            ),
+            decoration: const BoxDecoration(color: Colors.green),
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text("Logout"),
+            onTap: () {
+              BlocProvider.of<auth_bloc.AuthBloc>(context)
+                  .add(auth_bloc.AuthLogout());
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilters() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          if (_currentSort != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Chip(
+                label: Text(
+                  'Sort: ${_currentSort.toString().split('.').last}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onDeleted: () {
+                  setState(() {
+                    _currentSort = null;
+                  });
+                },
+              ),
+            ),
+          if (_currentDate != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Chip(
+                label: Text(
+                  'Date: ${DateFormat('MMM d').format(_currentDate!)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                onDeleted: () {
+                  setState(() {
+                    _currentDate = null;
+                  });
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

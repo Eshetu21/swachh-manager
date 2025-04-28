@@ -65,3 +65,24 @@ class Request {
   }
 }
 
+extension RequestQuantityParsing on Request {
+  int get parsedQuantity {
+    if (qtyRange == null) return 0;
+    if (qtyRange!.contains('+')) {
+      return (int.tryParse(
+                  qtyRange!.replaceAll('+', '').replaceAll('kg', '').trim()) ??
+              0) +
+          10;
+    }
+    if (qtyRange!.contains('-')) {
+      final parts = qtyRange!.split('-');
+      if (parts.length == 2) {
+        return int.tryParse(parts[1].replaceAll('kg', '').trim()) ?? 0;
+      }
+    }
+    return int.tryParse(qtyRange!.replaceAll('kg', '').trim()) ?? 0;
+  }
+
+  bool get isHeavy => qtyRange?.contains('+') ?? false;
+}
+

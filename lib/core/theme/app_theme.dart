@@ -72,7 +72,28 @@ class AppTheme {
       ),
       cardTheme: CardTheme(
         color: AppPallete.lightCardColor,
-      ));
+      ),
+       chipTheme: ChipThemeData(
+      backgroundColor: AppPallete.lightChipBackgroundColor,
+      disabledColor: Colors.grey.shade300,
+      selectedColor: AppPallete.primaryColor,
+      secondarySelectedColor: AppPallete.primaryColor.withOpacity(0.2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      labelStyle: TextThemes.lightTextTheme.labelSmall?.copyWith(
+        color: AppPallete.lightTextColor,
+      ),
+      secondaryLabelStyle: TextThemes.lightTextTheme.labelSmall?.copyWith(
+        color: AppPallete.whiteColor,
+      ),
+      brightness: Brightness.light,
+      elevation: 0,
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+      
+      );
 
   static final darkThemeMode = ThemeData(
     scaffoldBackgroundColor: AppPallete.darkBackgroundColor,
@@ -134,6 +155,25 @@ class AppTheme {
     ),
     iconTheme: const IconThemeData(
       color: AppPallete.darkIconColor,
+    ),
+        chipTheme: ChipThemeData(
+      backgroundColor: AppPallete.darkChipBackgroundColor,
+      disabledColor: Colors.grey.shade700,
+      selectedColor: AppPallete.successColor,
+      secondarySelectedColor: AppPallete.successColor.withOpacity(0.2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      labelStyle: TextThemes.darkTextTheme.labelSmall?.copyWith(
+        color: AppPallete.darkTextColor,
+      ),
+      secondaryLabelStyle: TextThemes.darkTextTheme.labelSmall?.copyWith(
+        color: AppPallete.whiteColor,
+      ),
+      brightness: Brightness.dark,
+      elevation: 0,
+      side: BorderSide.none,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
     ),
   );
 }

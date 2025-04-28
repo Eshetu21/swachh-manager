@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
-import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
-import 'package:kabadmanager/features/requests/request_detail_page.dart';
-import 'package:kabadmanager/features/requests/widgets/request_filter.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/models/address.dart';
 import 'package:kabadmanager/services/supabase_rpc_service.dart';
 import 'package:kabadmanager/shared/show_snackbar.dart';
 import 'package:kabadmanager/shimmering_widgets/request_tile.dart';
+import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
+import 'package:kabadmanager/features/requests/request_detail_page.dart';
+import 'package:kabadmanager/features/requests/widgets/request_filter.dart';
 
 class RequestWithAddress {
   final Request request;
@@ -20,10 +20,11 @@ class RequestWithAddress {
 
 class RequestList extends StatefulWidget {
   final SortOption? sortOption;
-  final DateTimeRange? dateRange;
+  final DateTime? selectedDate;
   final String status;
+
   const RequestList(
-      {super.key, required this.status, this.sortOption, this.dateRange});
+      {super.key, required this.status, this.sortOption, this.selectedDate});
 
   @override
   State<RequestList> createState() => _RequestListState();
@@ -44,7 +45,7 @@ class _RequestListState extends State<RequestList> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.status != widget.status ||
         oldWidget.sortOption != widget.sortOption ||
-        oldWidget.dateRange != widget.dateRange) {
+        oldWidget.selectedDate != widget.selectedDate) {
       setState(() {
         _requestsWithAddresses = _fetchRequestsAndAddresses();
       });
@@ -52,14 +53,15 @@ class _RequestListState extends State<RequestList> {
   }
 
   Future<List<RequestWithAddress>> _fetchRequestsAndAddresses() async {
-    final service = SupabaseRpcService();
-    List<Request> requests = await service.fetchRequestsByStatus(widget.status);
+    List<Request> requests =
+        await _rpcService.fetchRequestsByStatus(widget.status);
 
-    if (widget.dateRange != null) {
+    if (widget.selectedDate != null) {
       requests = requests.where((req) {
         final requestDate = req.requestDateTime;
-        return requestDate.isAfter(widget.dateRange!.start) &&
-            requestDate.isBefore(widget.dateRange!.end);
+        return requestDate.year == widget.selectedDate!.year &&
+            requestDate.month == widget.selectedDate!.month &&
+            requestDate.day == widget.selectedDate!.day;
       }).toList();
     }
 
@@ -74,60 +76,28 @@ class _RequestListState extends State<RequestList> {
               .sort((a, b) => a.requestDateTime.compareTo(b.requestDateTime));
           break;
         case SortOption.highestQuantity:
-          requests.sort((a, b) {
-            final aQty = int.tryParse(a.qtyRange!.split('-').last) ?? 0;
-            final bQty = int.tryParse(b.qtyRange!.split('-').last) ?? 0;
-            return bQty.compareTo(aQty);
-          });
+          requests.sort((a, b) => b.parsedQuantity.compareTo(a.parsedQuantity));
           break;
         case SortOption.lowestQuantity:
-          // Assuming qtyRange is in format "10-20" - we'll take the lower bound
-          requests.sort((a, b) {
-            final aQty = int.tryParse(a.qtyRange!.split('-').first) ?? 0;
-            final bQty = int.tryParse(b.qtyRange!.split('-').first) ?? 0;
-            return aQty.compareTo(bQty);
-          });
+          requests.sort((a, b) => a.parsedQuantity.compareTo(b.parsedQuantity));
           break;
-        default:
+        case null:
           break;
       }
     }
 
     final futures = requests.map((req) async {
-      final address = await service.fetchAddressById(req.addressId);
+      final address = await _rpcService.fetchAddressById(req.addressId);
       return RequestWithAddress(request: req, address: address);
     }).toList();
 
     return await Future.wait(futures);
   }
-  /*  Future<List<RequestWithAddress>> _fetchRequestsAndAddresses() async {
-    final service = SupabaseRpcService();
-    final requests = await service.fetchRequestsByStatus(widget.status);
 
-    final futures = requests.map((req) async {
-      final address = await service.fetchAddressById(req.addressId);
-      return RequestWithAddress(request: req, address: address);
-    }).toList();
-
-    return await Future.wait(futures);
-  } */
-
-  String formatTimeAgo(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-
-    if (diff.inDays >= 1) {
-      final days = diff.inDays;
-      return '$days ${days == 1 ? 'day' : 'days'} ago';
-    } else if (diff.inHours >= 1) {
-      final hours = diff.inHours;
-      return '$hours ${hours == 1 ? 'hour' : 'hours'} ago';
-    } else if (diff.inMinutes >= 1) {
-      final minutes = diff.inMinutes;
-      return '$minutes ${minutes == 1 ? 'minute' : 'minutes'} ago';
-    } else {
-      return 'Just now';
-    }
+  Future<void> _refreshData() async {
+    setState(() {
+      _requestsWithAddresses = _fetchRequestsAndAddresses();
+    });
   }
 
   Color getStatusColor(String status) {
@@ -143,10 +113,18 @@ class _RequestListState extends State<RequestList> {
     }
   }
 
-  Future<void> _refreshData() async {
-    setState(() {
-      _requestsWithAddresses = _fetchRequestsAndAddresses();
-    });
+  String formatTimeAgo(DateTime dateTime) {
+    final now = DateTime.now();
+    final diff = now.difference(dateTime);
+    if (diff.inDays >= 1) {
+      return '${diff.inDays}d ago';
+    } else if (diff.inHours >= 1) {
+      return '${diff.inHours}h ago';
+    } else if (diff.inMinutes >= 1) {
+      return '${diff.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   @override
@@ -159,13 +137,12 @@ class _RequestListState extends State<RequestList> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return ListView.builder(
               itemCount: 5,
-              itemBuilder: (context, index) {
-                return const ShimmeringPickRequestTile();
-              },
+              itemBuilder: (context, index) =>
+                  const ShimmeringPickRequestTile(),
             );
           } else if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text("No requests found."));
           }
 
@@ -176,14 +153,12 @@ class _RequestListState extends State<RequestList> {
               final req = requestData[index].request;
               final addr = requestData[index].address;
               final requestDate = req.requestDateTime.toLocal();
-              final requestId = requestData[index].request.id;
-
               final showActions =
                   widget.status == 'requested' || widget.status == "pending";
 
               return showActions
-                  ? _buildSlidableRequest(req, addr, requestDate, requestId)
-                  : _buildNonSlidableRequest(req, addr, requestDate, requestId);
+                  ? _buildSlidableRequest(req, addr, requestDate)
+                  : _buildNonSlidableRequest(req, addr, requestDate);
             },
           );
         },
@@ -192,31 +167,30 @@ class _RequestListState extends State<RequestList> {
   }
 
   Widget _buildSlidableRequest(
-      Request req, Address? addr, DateTime requestDate, String requestId) {
+      Request req, Address? addr, DateTime requestDate) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(
-                builder: (context) => RequestDetailPage(
-                    request: req, address: addr, requestId: requestId)))
-            .then((_) {
-          _refreshData();
-        });
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => RequestDetailPage(
+            request: req,
+            address: addr,
+            requestId: req.id,
+          ),
+        ));
+        _refreshData();
       },
       child: Slidable(
         key: ValueKey(req.id),
         startActionPane: ActionPane(
           motion: const DrawerMotion(),
-          extentRatio: 0.27,
+          extentRatio: 0.25,
           children: [
             SlidableAction(
               onPressed: (_) async {
                 await _rpcService.updateRequestStatus(
-                    requestId, RequestStatus.denied);
+                    req.id, RequestStatus.denied);
                 ShowSnackbar.show(context, isError: true, "Request Denied");
-                setState(() {
-                  _requestsWithAddresses = _fetchRequestsAndAddresses();
-                });
+                _refreshData();
               },
               backgroundColor: Colors.red,
               icon: Icons.cancel,
@@ -226,30 +200,20 @@ class _RequestListState extends State<RequestList> {
         ),
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
-          extentRatio: 0.27,
+          extentRatio: 0.25,
           children: [
             SlidableAction(
               onPressed: (_) async {
                 final partner = await showDialog<DeliveryPartner>(
                   context: context,
-                  builder: (context) =>
-                      AssignPartnerPopup(requestId: requestId),
+                  builder: (context) => AssignPartnerPopup(requestId: req.id),
                 );
-
                 if (partner != null) {
-                  try {
-                    await _rpcService.acceptRequestWithPartner(
-                      requestId: requestId,
-                      partnerId: partner.id,
-                    );
-                    ShowSnackbar.show(
-                        context, "Partner assigned and request accepted");
-                    setState(() {
-                      _requestsWithAddresses = _fetchRequestsAndAddresses();
-                    });
-                  } catch (e) {
-                    ShowSnackbar.show(context, isError: true, e.toString());
-                  }
+                  await _rpcService.acceptRequestWithPartner(
+                      requestId: req.id, partnerId: partner.id);
+                  ShowSnackbar.show(
+                      context, "Partner assigned and request accepted");
+                  _refreshData();
                 }
               },
               backgroundColor: Colors.green,
@@ -258,39 +222,33 @@ class _RequestListState extends State<RequestList> {
             ),
           ],
         ),
-        child: _buildRequestCard(context, req, addr, requestDate),
+        child: _buildRequestCard(req, addr, requestDate),
       ),
     );
   }
 
   Widget _buildNonSlidableRequest(
-      Request req, Address? addr, DateTime requestDate, String requestId) {
+      Request req, Address? addr, DateTime requestDate) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context)
-            .push(MaterialPageRoute(
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => RequestDetailPage(
             request: req,
             address: addr,
-            requestId: requestId,
+            requestId: req.id,
           ),
-        ))
-            .then((_) {
-          _refreshData();
-        });
+        ));
+        _refreshData();
       },
-      child: _buildRequestCard(context, req, addr, requestDate),
+      child: _buildRequestCard(req, addr, requestDate),
     );
   }
 
-  Widget _buildRequestCard(
-      BuildContext context, Request req, Address? addr, DateTime requestDate) {
+  Widget _buildRequestCard(Request req, Address? addr, DateTime requestDate) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -299,78 +257,60 @@ class _RequestListState extends State<RequestList> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  DateFormat('MMM d, y').format(requestDate),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text(DateFormat('MMM d, y').format(requestDate),
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold)),
                 Row(
                   children: [
                     const Icon(Icons.access_time, size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
-                    Text(
-                      formatTimeAgo(requestDate),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
-                    ),
+                    Text(formatTimeAgo(requestDate),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
-                )
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              addr != null ? addr.address : 'Address not found',
+              addr?.address ?? 'Address not found',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Quantity ${req.qtyRange}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'Quantity ${req.qtyRange ?? '-'}',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
                 Text(
                   DateFormat('M/d/y H:mm:ss').format(requestDate),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
-            Row(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(top: 5),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: getStatusColor(widget.status).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    widget.status.toUpperCase(),
-                    style: TextStyle(
-                      color: getStatusColor(widget.status),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: getStatusColor(widget.status).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                widget.status.toUpperCase(),
+                style: TextStyle(
+                  color: getStatusColor(widget.status),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
                 ),
-              ],
+              ),
             ),
           ],
         ),

@@ -10,14 +10,16 @@ enum SortOption {
 
 class RequestFilter extends StatefulWidget {
   final String currentStatus;
-  final Function(String, SortOption?, DateTimeRange?) onFilterApplied;
-  final VoidCallback onFiltersChanged;
+  final Function(SortOption?, DateTime?) onFilterApplied;
+  final SortOption? currentSort;
+  final DateTime? currentDate;
 
   const RequestFilter({
     super.key,
     required this.currentStatus,
     required this.onFilterApplied,
-    required this.onFiltersChanged,
+    this.currentSort,
+    this.currentDate,
   });
 
   @override
@@ -25,14 +27,14 @@ class RequestFilter extends StatefulWidget {
 }
 
 class _RequestFilterState extends State<RequestFilter> {
-  SortOption? _selectedSort;
-  DateTime? _selectedDate;
-  final TextEditingController _quantityController = TextEditingController();
+  late SortOption? _selectedSort;
+  late DateTime? _selectedDate;
 
   @override
-  void dispose() {
-    _quantityController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _selectedSort = widget.currentSort;
+    _selectedDate = widget.currentDate;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -42,99 +44,89 @@ class _RequestFilterState extends State<RequestFilter> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
+
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      setState(() => _selectedDate = picked);
     }
-  }
-
-  void _applyFilters() {
-    DateTimeRange? range = _selectedDate != null
-        ? DateTimeRange(start: _selectedDate!, end: _selectedDate!)
-        : null;
-    widget.onFilterApplied(widget.currentStatus, _selectedSort, range);
-    widget.onFiltersChanged();
-    Navigator.of(context).pop();
-  }
-
-  void _clearFilters() {
-    setState(() {
-      _selectedSort = null;
-      _selectedDate = null;
-      _quantityController.clear();
-    });
-    widget.onFilterApplied(widget.currentStatus, null, null);
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Filter Requests'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<SortOption>(
-              value: _selectedSort,
-              decoration: const InputDecoration(
-                labelText: 'Sort By',
-                border: OutlineInputBorder(),
+      title: const Text('Filter Options'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Sort by:', style: TextStyle(fontWeight: FontWeight.bold)),
+              DropdownButton<SortOption>(
+                isExpanded: true,
+                value: _selectedSort,
+                hint: const Text('Select sort option'),
+                items: const [
+                  DropdownMenuItem(
+                    value: SortOption.newestFirst,
+                    child: Text('Newest first'),
+                  ),
+                  DropdownMenuItem(
+                    value: SortOption.oldestFirst,
+                    child: Text('Oldest first'),
+                  ),
+                  DropdownMenuItem(
+                    value: SortOption.highestQuantity,
+                    child: Text('Highest quantity'),
+                  ),
+                  DropdownMenuItem(
+                    value: SortOption.lowestQuantity,
+                    child: Text('Lowest quantity'),
+                  ),
+                ],
+                onChanged: (value) => setState(() => _selectedSort = value),
               ),
-              items: const [
-                DropdownMenuItem(
-                  value: SortOption.newestFirst,
-                  child: Text('Newest First'),
+              const SizedBox(height: 16),
+              const Text('Filter by date:', style: TextStyle(fontWeight: FontWeight.bold)),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.calendar_today),
+                title: Text(
+                  _selectedDate == null
+                      ? 'No date selected'
+                      : DateFormat('MMM d, y').format(_selectedDate!),
                 ),
-                DropdownMenuItem(
-                  value: SortOption.oldestFirst,
-                  child: Text('Oldest First'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_selectedDate != null)
+                      IconButton(
+                        icon: const Icon(Icons.clear, size: 20),
+                        onPressed: () => setState(() => _selectedDate = null),
+                      ),
+                    SizedBox(
+                      width: 100,
+                      child: ElevatedButton(
+                        onPressed: () => _selectDate(context),
+                        child: const Text('Select'),
+                      ),
+                    ),
+                  ],
                 ),
-                DropdownMenuItem(
-                  value: SortOption.highestQuantity,
-                  child: Text('Highest Quantity'),
-                ),
-                DropdownMenuItem(
-                  value: SortOption.lowestQuantity,
-                  child: Text('Lowest Quantity'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedSort = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              title: Text(
-                _selectedDate == null
-                    ? 'Select Date'
-                    : DateFormat('MMM d, y').format(_selectedDate!),
               ),
-              trailing: const Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _quantityController,
-              decoration: const InputDecoration(
-                labelText: 'Quantity Range (e.g., 10-20)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.text,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: _clearFilters,
-          child: const Text('Clear'),
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: _applyFilters,
+          onPressed: () {
+            widget.onFilterApplied(_selectedSort, _selectedDate);
+            Navigator.pop(context);
+          },
           child: const Text('Apply'),
         ),
       ],
