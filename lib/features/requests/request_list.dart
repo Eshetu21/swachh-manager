@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:kabadmanager/features/delivery/assign_partner_popup.dart';
 import 'package:kabadmanager/features/requests/request_detail_page.dart';
+import 'package:kabadmanager/features/requests/widgets/request_filter.dart';
 import 'package:kabadmanager/models/delivery_partner.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/models/address.dart';
@@ -18,8 +19,11 @@ class RequestWithAddress {
 }
 
 class RequestList extends StatefulWidget {
+  final SortOption? sortOption;
+  final DateTimeRange? dateRange;
   final String status;
-  const RequestList({super.key, required this.status});
+  const RequestList(
+      {super.key, required this.status, this.sortOption, this.dateRange});
 
   @override
   State<RequestList> createState() => _RequestListState();
@@ -38,7 +42,9 @@ class _RequestListState extends State<RequestList> {
   @override
   void didUpdateWidget(covariant RequestList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.status != widget.status) {
+    if (oldWidget.status != widget.status ||
+        oldWidget.sortOption != widget.sortOption ||
+        oldWidget.dateRange != widget.dateRange) {
       setState(() {
         _requestsWithAddresses = _fetchRequestsAndAddresses();
       });
@@ -46,6 +52,55 @@ class _RequestListState extends State<RequestList> {
   }
 
   Future<List<RequestWithAddress>> _fetchRequestsAndAddresses() async {
+    final service = SupabaseRpcService();
+    List<Request> requests = await service.fetchRequestsByStatus(widget.status);
+
+    if (widget.dateRange != null) {
+      requests = requests.where((req) {
+        final requestDate = req.requestDateTime;
+        return requestDate.isAfter(widget.dateRange!.start) &&
+            requestDate.isBefore(widget.dateRange!.end);
+      }).toList();
+    }
+
+    if (widget.sortOption != null) {
+      switch (widget.sortOption) {
+        case SortOption.newestFirst:
+          requests
+              .sort((a, b) => b.requestDateTime.compareTo(a.requestDateTime));
+          break;
+        case SortOption.oldestFirst:
+          requests
+              .sort((a, b) => a.requestDateTime.compareTo(b.requestDateTime));
+          break;
+        case SortOption.highestQuantity:
+          requests.sort((a, b) {
+            final aQty = int.tryParse(a.qtyRange!.split('-').last) ?? 0;
+            final bQty = int.tryParse(b.qtyRange!.split('-').last) ?? 0;
+            return bQty.compareTo(aQty);
+          });
+          break;
+        case SortOption.lowestQuantity:
+          // Assuming qtyRange is in format "10-20" - we'll take the lower bound
+          requests.sort((a, b) {
+            final aQty = int.tryParse(a.qtyRange!.split('-').first) ?? 0;
+            final bQty = int.tryParse(b.qtyRange!.split('-').first) ?? 0;
+            return aQty.compareTo(bQty);
+          });
+          break;
+        default:
+          break;
+      }
+    }
+
+    final futures = requests.map((req) async {
+      final address = await service.fetchAddressById(req.addressId);
+      return RequestWithAddress(request: req, address: address);
+    }).toList();
+
+    return await Future.wait(futures);
+  }
+  /*  Future<List<RequestWithAddress>> _fetchRequestsAndAddresses() async {
     final service = SupabaseRpcService();
     final requests = await service.fetchRequestsByStatus(widget.status);
 
@@ -55,7 +110,7 @@ class _RequestListState extends State<RequestList> {
     }).toList();
 
     return await Future.wait(futures);
-  }
+  } */
 
   String formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
@@ -171,7 +226,7 @@ class _RequestListState extends State<RequestList> {
         ),
         endActionPane: ActionPane(
           motion: const DrawerMotion(),
-          extentRatio: 0.25,
+          extentRatio: 0.27,
           children: [
             SlidableAction(
               onPressed: (_) async {
@@ -322,35 +377,5 @@ class _RequestListState extends State<RequestList> {
       ),
     );
   }
-/*   Future<void> _showAssignPartnerDialog(BuildContext context, String requestId) async {
-  final partner = await showDialog<DeliveryPartner>(
-    context: context,
-    builder: (context) => AssignPartnerPopup(requestId: requestId),
-  );
-
-  if (partner != null) {
-    try {
-      // First assign the partner
-      await _rpcService.from('requests')
-        .update({
-          'delivery_partner_id': partner.id,
-          'status': RequestStatus.accepted.name
-        })
-        .eq('id', requestId);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Partner assigned and request accepted')),
-      );
-      
-      setState(() {
-        _requestsWithAddresses = _fetchRequestsAndAddresses();
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    }
-  }
-} */
 }
 

@@ -208,7 +208,8 @@ class _PickOrderPageState extends State<PickOrderPage> {
     } catch (e) {
       if (mounted) {
         ShowSnackbar.show(
-            context, 'Failed to create transaction: ${e.toString()}',isError: true);
+            context, 'Failed to create transaction: ${e.toString()}',
+            isError: true);
       }
     } finally {
       if (mounted) {

@@ -5,6 +5,7 @@ import 'package:kabadmanager/features/auth/logic/auth_bloc.dart' as auth_bloc;
 import 'package:kabadmanager/features/dashboard/widgets/status_bar.dart';
 import 'package:kabadmanager/features/delivery/add_delivery_partner.dart';
 import 'package:kabadmanager/features/requests/request_list.dart';
+import 'package:kabadmanager/features/requests/widgets/request_filter.dart';
 import 'package:kabadmanager/models/request.dart';
 import 'package:kabadmanager/services/session_service.dart';
 import 'package:kabadmanager/shared/show_snackbar.dart';
@@ -21,6 +22,8 @@ class _DashboardState extends State<Dashboard> {
   final user = Supabase.instance.client.auth.currentUser;
   int selectedIndex = 0;
   final SessionService _sessionService = sl<SessionService>();
+  SortOption? _currentSort;
+  DateTimeRange? _currentDateRange;
 
   @override
   void initState() {
@@ -56,6 +59,28 @@ class _DashboardState extends State<Dashboard> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("KabadManager"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => RequestFilter(
+                  currentStatus: visibleStatuses[selectedIndex].name,
+                  onFilterApplied: (status, sortOption, dateRange) {
+                    setState(() {
+                      _currentSort = sortOption;
+                      _currentDateRange = dateRange;
+                    });
+                  },
+                  onFiltersChanged: () {
+                    setState(() {});
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
       drawer: isSmallScreen || !isPortrait
           ? Drawer(
@@ -150,6 +175,8 @@ class _DashboardState extends State<Dashboard> {
                   Expanded(
                     child: RequestList(
                       status: visibleStatuses[selectedIndex].name,
+                      sortOption: _currentSort,
+                      dateRange: _currentDateRange,
                     ),
                   ),
                 ],
