@@ -1,16 +1,20 @@
-# kabadmanager
+# KabadManager – Admin App for Swachh Kabadi
 
-A new Flutter project.
+- KabadManager is the admin-side Flutter application for the Swachh Kabadi platform — an intelligent, modern waste management solution that connects users with local kabadiwalas for efficient and sustainable recycling. While the user app is available on the Google Play Store, this admin app is used by authorized personnel to manage operations, monitor activity, and analyze data in real-time.
 
-## Getting Started
+## Project Structure & Tech Stack
 
-This project is a starting point for a Flutter application.
+- This project is built using Flutter with the Clean Architecture pattern and integrates the following technologies:
+State Management: BLoC (Business Logic Component)
+- Backend Services:
+ - Firebase – for authentication, notifications, and real-time database
+ - Supabase – for additional data handling, storage, and role-based access
+ - Architecture: Clean Architecture for scalable and testable code
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Features
+- 📊 Dashboard Overview – Monitor waste pickup requests, active users, registered kabadiwalas
+- 👤 User & Kabadiwala Management – Approve, reject, or monitor users and vendors
+- 🧾 Request Tracking – View and update status of pickup requests
+- 📍 Location Insights – Access location data via Firebase GeoPoint for mapping pickups
+- 🔔 Notifications – Push alerts via Firebase Cloud Messaging (FCM)
+- 🧠 Real-time Data – Sync data live with Firebase/Supabase
