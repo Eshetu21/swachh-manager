@@ -19,7 +19,7 @@ class AppPallete {
   static const Color darkIconColor = Color(0xFFB0B0B0);
   static const Color darkChipBackgroundColor = Color(0xFF2D2D2D);
 
-  // Common colors (unchanged)
+  // Common colors
   static const Color whiteColor = Colors.white;
   static const Color greyColor = Colors.grey;
   static const Color errorColor = Colors.red;

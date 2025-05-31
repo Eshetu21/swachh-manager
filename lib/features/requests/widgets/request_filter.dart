@@ -59,8 +59,10 @@ class _RequestFilterState extends State<RequestFilter> {
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Sort by:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Sort by:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               DropdownButton<SortOption>(
                 isExpanded: true,
                 value: _selectedSort,
@@ -86,7 +88,8 @@ class _RequestFilterState extends State<RequestFilter> {
                 onChanged: (value) => setState(() => _selectedSort = value),
               ),
               const SizedBox(height: 16),
-              const Text('Filter by date:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Filter by date:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today),

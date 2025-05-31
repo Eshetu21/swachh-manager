@@ -85,7 +85,7 @@ Future<void> _requestNotificationPermissions() async {
 }
 
 Future<void> setupOneSignal() async {
-  OneSignal.initialize("f260678b-34a2-4a29-81cc-67aa23cfb02c");
+  OneSignal.initialize(dotenv.env["ONESIGNAL_ID"] ?? "");
   await OneSignal.Notifications.requestPermission(true);
   await OneSignal.User.pushSubscription.optIn();
   OneSignal.Debug.setLogLevel(OSLogLevel.verbose);

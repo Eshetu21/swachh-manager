@@ -212,27 +212,24 @@ class _DashboardState extends State<Dashboard> {
       child: Row(
         children: [
           if (_currentSort != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Chip(
-                label: Text(
-                  'Sort: ${_currentSort.toString().split('.').last}',
-                  style: const TextStyle(fontSize: 12),
-                ),
-                onDeleted: () {
-                  setState(() {
-                    _currentSort = null;
-                  });
-                },
+            Chip(
+              label: Text(
+                'Sort: ${_currentSort.toString().split('.').last}',
+                style: const TextStyle(fontSize: 13),
               ),
+              onDeleted: () {
+                setState(() {
+                  _currentSort = null;
+                });
+              },
             ),
           if (_currentDate != null)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Chip(
                 label: Text(
                   'Date: ${DateFormat('MMM d').format(_currentDate!)}',
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 13),
                 ),
                 onDeleted: () {
                   setState(() {
